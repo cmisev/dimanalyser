@@ -2,6 +2,9 @@ package com.dimanalyser.test;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +24,28 @@ public class ParserHelpersTest {
 
 	@Test
 	public void testGetParametersList() {
-		fail("Not yet implemented");
+		try {
+			List<String> actualList = ParserHelpers.getParametersList("integrate_function( distance,force(:) , xmin,xmax, \"spline\")");
+			assertEquals(6, actualList.size());
+			assertEquals("integrate_function", actualList.get(0));
+			assertEquals("distance", actualList.get(1));
+			assertEquals("force(:)", actualList.get(2));
+			assertEquals("xmin", actualList.get(3));
+			assertEquals("xmax", actualList.get(4));
+			assertEquals("\"spline\"", actualList.get(5));
+			
+			actualList = ParserHelpers.getParametersList("integrate_function");
+			assertEquals(1, actualList.size());
+			assertEquals("integrate_function", actualList.get(0));
+			
+			actualList = ParserHelpers.getParametersList("integrate_function( )");
+			assertEquals(1, actualList.size());
+			assertEquals("integrate_function", actualList.get(0));
+			
+		} catch (UnbalancedBracesError e) {
+			fail("UnbalancedBracesError raised while it shouldn't");
+		}
+		
 	}
 
 	@Test
@@ -142,7 +166,30 @@ public class ParserHelpersTest {
 
 	@Test
 	public void testGetVariableList() {
-		fail("Not yet implemented");
+		try {
+			List<String> actualList = ParserHelpers.getVariableList("mass, acceleration(1,2,3),c,  ,velocity , energy", true);
+			
+			assertEquals(5, actualList.size());
+			assertEquals("mass", actualList.get(0));
+			assertEquals("acceleration", actualList.get(1));
+			assertEquals("c", actualList.get(2));
+			assertEquals("velocity", actualList.get(3));
+			assertEquals("energy", actualList.get(4));
+
+			actualList = ParserHelpers.getVariableList("mass, acceleration(1,2,3) ,c  ,velocity , energy", false);
+			
+			assertEquals(5, actualList.size());
+			assertEquals("mass", actualList.get(0));
+			assertEquals("acceleration(1,2,3)", actualList.get(1));
+			assertEquals("c", actualList.get(2));
+			assertEquals("velocity", actualList.get(3));
+			assertEquals("energy", actualList.get(4));
+			
+			
+		} catch (UnbalancedBracesError e) {
+			fail("UnbalancedBracesError raised while it shouldn't");
+		}
+		
 	}
 
 }

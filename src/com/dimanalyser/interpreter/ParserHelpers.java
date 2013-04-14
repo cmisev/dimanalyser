@@ -8,7 +8,7 @@ import java.util.Stack;
 import com.dimanalyser.errors.UnbalancedBracesError;
 
 public class ParserHelpers {
-
+	
 	public static List<String> getParametersList(String string) throws UnbalancedBracesError {
 		List<String> retval = new ArrayList<String>();
  		int k = string.indexOf("(");
@@ -20,6 +20,7 @@ public class ParserHelpers {
 			while(string.length()>0) {
 				k = getInterpretedIndex(string, ",");
 				String parameter = string.substring(0,k);
+				parameter = parameter.trim();
 				if (parameter.length()>0) {
 					retval.add(parameter);
 				}
@@ -77,7 +78,7 @@ public class ParserHelpers {
 			} else {
 				if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
 					(string.substring(k, k+1).equals(bstack.lastElement())) &&
-					(k==0 || string.charAt(k-1)!='\\')) {
+					(string.charAt(k-1)!='\\')) {
 					inliteral = false;
 					bstack.pop();
 				}
@@ -164,9 +165,10 @@ public class ParserHelpers {
 					variable = variable.substring(0,j);
 				}
 			}
+			variable = variable.trim();
 			
 			if (variable.length()>0) {
-				retval.add(variable.trim());
+				retval.add(variable);
 			}
 			if (k<string.length()) {
 				string = string.substring(k+1);
