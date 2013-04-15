@@ -21,6 +21,7 @@ public class ParserHelpersTest {
 	@After
 	public void tearDown() throws Exception {
 	}
+	
 
 	@Test
 	public void testGetParametersList() {
@@ -102,6 +103,12 @@ public class ParserHelpersTest {
 		} catch (UnbalancedBracesError e) {
 			fail("UnbalancedBracesError raised while it shouldn't");
 		} 
+		
+		try {
+			assertEquals(8, ParserHelpers.getInterpretedIndex(";\\\\\\\\\\\"\",", ","));
+		} catch (UnbalancedBracesError e) {
+			fail("UnbalancedBracesError raised while it shouldn't");
+		} 
 	}
 	
 	@Test
@@ -155,6 +162,12 @@ public class ParserHelpersTest {
 		
 		try {
 			assertEquals(-1, ParserHelpers.getInterpretedIndexReverse("\"()((\\\"))([')[()'])\",", ";"));
+		} catch (UnbalancedBracesError e) {
+			fail("UnbalancedBracesError raised while it shouldn't");
+		} 
+		
+		try {
+			assertEquals(0, ParserHelpers.getInterpretedIndexReverse(";\"\\\\\\\\\\\"\",", ";"));
 		} catch (UnbalancedBracesError e) {
 			fail("UnbalancedBracesError raised while it shouldn't");
 		} 

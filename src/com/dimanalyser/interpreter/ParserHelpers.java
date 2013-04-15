@@ -1,6 +1,7 @@
 package com.dimanalyser.interpreter;
 
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
@@ -42,46 +43,54 @@ public class ParserHelpers {
 		boolean inliteral = false;
 
 		while(k!=string.length()) {
-			if (!inliteral) {
-				
-				if (bstack.empty() && string.substring(k).startsWith(needle)) {
-					return k;
-				}
-				try {
+			try {
+				if (!inliteral) {
+					
+					if (bstack.empty() && string.substring(k).startsWith(needle)) {
+						return k;
+					}
 					
 					switch (string.charAt(k)) {
-					case '"':
-					case '\'':
-						inliteral = true;
-					case '(':
-					case '[':
-						bstack.push(string.substring(k, k+1));
-						break;
-					case ')':
-						if(bstack.lastElement().equals("(")) {
-							bstack.pop();
-						} else {
-							throw new UnbalancedBracesError();
-						}
-						break;
-					case ']':
-						if(bstack.lastElement().equals("[")) {
-							bstack.pop();
-						} else {
-							throw new UnbalancedBracesError();
-						}
-						break;
+						case '"':
+						case '\'':
+							inliteral = true;
+						case '(':
+						case '[':
+							bstack.push(string.substring(k, k+1));
+							break;
+						case ')':
+							if(bstack.lastElement().equals("(")) {
+								bstack.pop();
+							} else {
+								throw new UnbalancedBracesError();
+							}
+							break;
+						case ']':
+							if(bstack.lastElement().equals("[")) {
+								bstack.pop();
+							} else {
+								throw new UnbalancedBracesError();
+							}
+							break;
 					}
-				} catch(NoSuchElementException e) {
-					throw new UnbalancedBracesError();
+				} else {
+					if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
+						(string.substring(k, k+1).equals(bstack.lastElement()))) {
+						int kescapes=k-1;
+						while(kescapes > 0 && string.charAt(kescapes)=='\\') {
+							kescapes--;
+						}
+						if (((k-kescapes) & 1) == 1) {
+							inliteral = false;
+							bstack.pop();
+						}
+					}
 				}
-			} else {
-				if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
-					(string.substring(k, k+1).equals(bstack.lastElement())) &&
-					(string.charAt(k-1)!='\\')) {
-					inliteral = false;
-					bstack.pop();
-				}
+			} catch(NoSuchElementException e) {
+				throw new UnbalancedBracesError();
+				
+			} catch(EmptyStackException e) {
+				throw new UnbalancedBracesError();
 			}
 			
 			k++;
@@ -99,46 +108,55 @@ public class ParserHelpers {
 		boolean inliteral = false;
 
 		while(k!=-1) {
-			if (!inliteral) {
-				
-				if (bstack.empty() && string.substring(k).startsWith(needle)) {
-					return k;
-				}
-				try {
+			try {
+				if (!inliteral) {
 					
-					switch (string.charAt(k)) {
-					case '"':
-					case '\'':
-						inliteral = true;
-					case ')':
-					case ']':
-						bstack.push(string.substring(k, k+1));
-						break;
-					case '(':
-						if(bstack.lastElement().equals(")")) {
-							bstack.pop();
-						} else {
-							throw new UnbalancedBracesError();
-						}
-						break;
-					case '[':
-						if(bstack.lastElement().equals("]")) {
-							bstack.pop();
-						} else {
-							throw new UnbalancedBracesError();
-						}
-						break;
+					if (bstack.empty() && string.substring(k).startsWith(needle)) {
+						return k;
 					}
-				} catch(NoSuchElementException e) {
-					throw new UnbalancedBracesError();
+						
+						switch (string.charAt(k)) {
+						case '"':
+						case '\'':
+							inliteral = true;
+						case ')':
+						case ']':
+							bstack.push(string.substring(k, k+1));
+							break;
+						case '(':
+							if(bstack.lastElement().equals(")")) {
+								bstack.pop();
+							} else {
+								throw new UnbalancedBracesError();
+							}
+							break;
+						case '[':
+							if(bstack.lastElement().equals("]")) {
+								bstack.pop();
+							} else {
+								throw new UnbalancedBracesError();
+							}
+							break;
+						}
+				} else {
+					if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
+						(string.substring(k, k+1).equals(bstack.lastElement()))) {
+						
+						int kescapes=k-1;
+						while(kescapes > 0 && string.charAt(kescapes)=='\\') {
+							kescapes--;
+						}
+						if (((k-kescapes) & 1) == 1) {
+							inliteral = false;
+							bstack.pop();
+						}
+						k = kescapes+1;
+					}
 				}
-			} else {
-				if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
-					(string.substring(k, k+1).equals(bstack.lastElement())) &&
-					(k==0 || string.charAt(k-1)!='\\')) {
-					inliteral = false;
-					bstack.pop();
-				}
+			} catch(NoSuchElementException e) {
+				throw new UnbalancedBracesError();
+			} catch(EmptyStackException e) {
+				throw new UnbalancedBracesError();
 			}
 			
 			k--;
