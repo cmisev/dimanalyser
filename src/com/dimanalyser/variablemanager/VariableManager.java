@@ -6,6 +6,7 @@ import java.util.Stack;
 import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.InstanceExistsError;
 import com.dimanalyser.errors.InstanceNotFoundError;
+import com.dimanalyser.errors.NotInAnyScopeError;
 import com.dimanalyser.errors.ScopeExistsError;
 import com.dimanalyser.errors.ScopeNotFoundError;
 
@@ -19,6 +20,7 @@ public class VariableManager {
 	    	mScopes = new HashMap<String, Scope>();
 	    	mScopeWalk = new Stack<Scope>();
 	    	mCurrentScope = new Scope("__GLOBAL__");
+			mScopes.put("__GLOBAL__",mCurrentScope);
 	    }
 		
 		public void enterScope(String name,int inheritanceLevel) throws ScopeExistsError {
@@ -27,12 +29,11 @@ public class VariableManager {
 			if (mScopes.containsKey(name)) {
 				throw new ScopeExistsError(name);
 			} else {
-				mScopes.put(name,mCurrentScope);
 				mScopeWalk.push(mCurrentScope);
-				
 				Scope scope = new Scope(name);
 				scope.addInheritance(new Inheritance(mCurrentScope, inheritanceLevel));
 				mCurrentScope = scope;
+				mScopes.put(name,mCurrentScope);
 			}
 		}
 		
@@ -44,9 +45,13 @@ public class VariableManager {
 			}
 		}
 		
-		public void leaveScope() {
-			Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()),mScopeWalk.size()-1);
-			mCurrentScope = mScopeWalk.pop();
+		public void leaveScope() throws NotInAnyScopeError {
+			try {
+				Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()),mScopeWalk.size()-1);
+				mCurrentScope = mScopeWalk.pop();
+			} catch(Exception e) {
+				throw new NotInAnyScopeError();
+			}
 		}
 		
 		public void addInstance(Instance instance) throws InstanceExistsError {
@@ -54,8 +59,9 @@ public class VariableManager {
 			mCurrentScope.addInstance(instance);
 		}
 		
-		public PhysicalUnit getInstanceUnit(String name) throws InstanceNotFoundError {
-			return mCurrentScope.getInstanceUnit(name);
+		
+		public Instance getInstance(String name) throws InstanceNotFoundError {
+			return mCurrentScope.getInstance(name);
 		}
 		    
 }

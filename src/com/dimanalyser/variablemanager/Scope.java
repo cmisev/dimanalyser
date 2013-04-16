@@ -3,7 +3,9 @@ package com.dimanalyser.variablemanager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.InstanceExistsError;
 import com.dimanalyser.errors.InstanceNotFoundError;
 
@@ -11,7 +13,7 @@ public class Scope {
 
 	private String mName;
 	private List<Inheritance> mInheritances;
-	private HashMap<String,Instance> mInstances;
+	private Map<String,Instance> mInstances;
 	
 	
 	public Scope(String name) {
@@ -32,18 +34,20 @@ public class Scope {
 		}
 	}
 
-	public PhysicalUnit getInstanceUnit(String name) throws InstanceNotFoundError {
-		return getInstanceUnit(name, InheritanceLevel.SCOPE_PRIVATE);
+
+
+	public String getName() {
+		return mName;
 	}
-	
-	public PhysicalUnit getInstanceUnit(String name, int accessLevel) throws InstanceNotFoundError {
+
+	public Instance getInstance(String name, int accessLevel) throws InstanceNotFoundError {
 		if (mInstances.containsKey(name) && mInstances.get(name).getAccessLevel()<=accessLevel ) {
-			return mInstances.get(name).getUnit();
+			return mInstances.get(name);
 		}
 		
 		for(Inheritance inh : mInheritances) {
 			try {
-				return inh.getScope().getInstanceUnit(name, Math.max(accessLevel,inh.getInheritanceLevel()));
+				return inh.getScope().getInstance(name, Math.max(accessLevel,inh.getInheritanceLevel()));
 			} catch(InstanceNotFoundError nf) {
 				
 			}
@@ -51,9 +55,9 @@ public class Scope {
 		
 		throw new InstanceNotFoundError(name);
 	}
-
-	public String getName() {
-		return mName;
+	
+	public Instance getInstance(String name) throws InstanceNotFoundError {
+		return getInstance(name, InheritanceLevel.SCOPE_PUBLIC);
 	}
 
 

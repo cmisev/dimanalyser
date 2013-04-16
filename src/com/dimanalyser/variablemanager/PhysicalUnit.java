@@ -48,7 +48,7 @@ public class PhysicalUnit {
 			
 		}
 		
-		return new PhysicalUnit(Math.pow(lhs.getScaling(),rhs.getScaling()), lhs.getBaseUnits());
+		return new PhysicalUnit(Math.pow(lhs.getScaling(),rhs.getScaling()), baseUnits);
 	}
 	
 	
@@ -68,7 +68,7 @@ public class PhysicalUnit {
 	public String toString() {
 		String retval="";
 		if (mScaling!=1.0) {
-			retval = retval + String.format("%.0g", mScaling);
+			retval = retval + String.format("%g", mScaling);
 		}
 		
 		if (mBaseUnits[0]==1.0) {
@@ -89,5 +89,14 @@ public class PhysicalUnit {
 			retval = retval + String.format(" s^%.0g", mBaseUnits[2]);
 		}
 		return retval.trim();
+	}
+	
+	public boolean equals(PhysicalUnit other) {
+		
+		if (other.getScaling()!=mScaling) return false;
+		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+			if (mBaseUnits[k]!=other.getBaseUnits()[k]) return false;
+		}
+		return true;
 	}
 }

@@ -11,7 +11,6 @@ public class Globals {
 	public static final String COMMENT_START = "!";
 	public static String fileName = "testfortran.f90";
 	
-	
 	public static HashMap<String,PhysicalUnit> units;
 	
 	public static void debug(String message, int depth) {

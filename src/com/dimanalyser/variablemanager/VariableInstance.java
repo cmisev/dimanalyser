@@ -9,6 +9,11 @@ public class VariableInstance extends Instance {
 		mUnit = unit;
 	}
 
+	public VariableInstance(String name, int accessLevel) {
+		super(name, accessLevel);
+		mUnit = null;
+	}
+
 	public String toString() {
 		if (mUnit!=null) {			
 			return String.format("variable instance %s [%s]", mName, mUnit.toString());

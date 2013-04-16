@@ -5,6 +5,7 @@ import java.util.List;
 import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.ExponentNotScalarError;
 import com.dimanalyser.errors.InstanceExistsError;
+import com.dimanalyser.errors.NotInAnyScopeError;
 import com.dimanalyser.errors.ScopeExistsError;
 import com.dimanalyser.errors.UnbalancedBracesError;
 import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
@@ -20,7 +21,7 @@ public class FortranInterpreter extends Interpreter {
 
 	@Override
 	public int interpretStatements(int linenumber, List<String> lines) 
-			throws UnbalancedBracesError, ScopeExistsError, UnitDeclarationsDontMatchError, InstanceExistsError, ExponentNotScalarError {
+			throws UnbalancedBracesError, ScopeExistsError, UnitDeclarationsDontMatchError, InstanceExistsError, ExponentNotScalarError, NotInAnyScopeError {
 		
 		
 		String comment = "";
