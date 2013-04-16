@@ -99,4 +99,12 @@ public class PhysicalUnit {
 		}
 		return true;
 	}
+	
+	public int hashCode() {
+		int retval = 0;
+		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+			retval += retval*7+((int) mBaseUnits[k])+3;
+		}
+		return retval;
+	}
 }
