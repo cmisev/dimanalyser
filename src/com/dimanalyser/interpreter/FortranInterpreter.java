@@ -30,7 +30,7 @@ public class FortranInterpreter extends Interpreter {
 		
 		while(instructions.endsWith("&")) {
 			String line = lines.get(linenumber+linesinterpreted);
-			int k = ParserHelpers.getInterpretedIndex(line,Globals.COMMENT_START);
+			int k = ExpressionParser.getInterpretedIndex(line,Globals.COMMENT_START);
 			
 			if (k < line.length()) {
 				comment = comment.concat(line.substring(k+1));
@@ -47,14 +47,14 @@ public class FortranInterpreter extends Interpreter {
 		if (instructions.startsWith("PROGRAM ")) {
 			mVariableManager.enterScope("PROGRAM", InheritanceLevel.SCOPE_PRIVATE);
 		} else if (instructions.startsWith("SUBROUTINE ")) {
-			List<String> parameterList = ParserHelpers.getParametersList(instructions);
+			List<String> parameterList = ExpressionParser.getParametersList(instructions);
 			mVariableManager.enterScope(parameterList.get(0), InheritanceLevel.SCOPE_PRIVATE);
 				
 			
 		} else if (instructions.startsWith("REAL")) {
 			List<String> variableList = 
-					ParserHelpers.getVariableList(
-							instructions.substring(ParserHelpers.getInterpretedIndex(instructions, "::")+2),true);
+					ExpressionParser.getVariableList(
+							instructions.substring(ExpressionParser.getInterpretedIndex(instructions, "::")+2),true);
 			
 			List<PhysicalUnit> units = parseUnitDeclarationsFromComment(comment);
 			

@@ -28,8 +28,8 @@ public abstract class Interpreter {
 		int start = 0;
 		int end = 0;
 		
-		while((start=ParserHelpers.getInterpretedIndex(string, "U(", end))<string.length()) {
-			end = ParserHelpers.getInterpretedIndex(string, ")",start+2);
+		while((start=ExpressionParser.getInterpretedIndex(string, "U(", end))<string.length()) {
+			end = ExpressionParser.getInterpretedIndex(string, ")",start+2);
 			retval.add(parseUnitDeclaration(string.substring(start+2,end).replace(" ","")));
 			end = end + 1;
 		}
@@ -38,8 +38,8 @@ public abstract class Interpreter {
 	}
 	
 	private PhysicalUnit parseUnitDeclaration(String string) throws UnbalancedBracesError, ExponentNotScalarError {
-		int k=Math.max(ParserHelpers.getInterpretedIndexReverse(string,"*"),
-				ParserHelpers.getInterpretedIndexReverse(string,"/"));
+		int k=Math.max(ExpressionParser.getInterpretedIndexReverse(string,"*"),
+				ExpressionParser.getInterpretedIndexReverse(string,"/"));
 		
 		if (k!=-1) {
 			PhysicalUnit lhs = parseUnitDeclaration(string.substring(0, k));
@@ -52,7 +52,7 @@ public abstract class Interpreter {
 		}
 		
 		
-		k = ParserHelpers.getInterpretedIndexReverse(string,"^");
+		k = ExpressionParser.getInterpretedIndexReverse(string,"^");
 		
 		if (k!=-1) {
 			PhysicalUnit lhs = parseUnitDeclaration(string.substring(0, k));
