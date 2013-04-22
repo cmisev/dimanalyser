@@ -8,7 +8,7 @@ public class PhysicalUnit {
 	double[] mBaseUnits;
 	double mScaling;
 	
-	public PhysicalUnit(double scaling,double... baseunits) {
+	public PhysicalUnit(double scaling,double[] baseunits) {
 		mBaseUnits = new double[Globals.NUM_BASEUNITS];
 		
 		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
@@ -19,12 +19,27 @@ public class PhysicalUnit {
 
 	public static PhysicalUnit product(PhysicalUnit lhs, PhysicalUnit rhs) {
 		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
+		boolean lhsunitless = true;
+		boolean rhsunitless = true;
 		
 		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
 			baseUnits[k] = lhs.getBaseUnits()[k] + rhs.getBaseUnits()[k];
+			if (lhs.getBaseUnits()[k]!=0.0) {
+				lhsunitless = false;
+			}
+			if (rhs.getBaseUnits()[k]!=0.0) {
+				rhsunitless = false;
+			}
 		}
-		
-		return new PhysicalUnit(lhs.getScaling()*rhs.getScaling(), baseUnits);
+		if (!lhsunitless && !rhsunitless) {
+			return new PhysicalUnit(lhs.getScaling()*rhs.getScaling(), baseUnits);
+		} else if (lhsunitless && !rhsunitless) {
+			return rhs;
+		} else if (!lhsunitless && rhsunitless) {
+			return lhs;
+		} else {
+			return Globals.UNIT_UNITLESS;
+		}
 	}
 	
 	public static PhysicalUnit fraction(PhysicalUnit lhs, PhysicalUnit rhs) {
@@ -87,6 +102,9 @@ public class PhysicalUnit {
 			retval = retval + " s";
 		} else if (mBaseUnits[2]!=0.0) {
 			retval = retval + String.format(" s^%.0g", mBaseUnits[2]);
+		}
+		if (retval.trim().equals("")) {
+			return "1";
 		}
 		return retval.trim();
 	}

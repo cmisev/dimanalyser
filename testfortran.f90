@@ -8,7 +8,7 @@ PROGRAM test
     REAL, DIMENSION(3) :: force !U(N)
     REAL :: mass !U(kg)
 
-    energy = mass*velocity**2
+    energy = 0.5*mass*velocity**2
 
     !CALL testsubroutine(energy,mass,velocity)
 
