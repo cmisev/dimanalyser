@@ -2,6 +2,7 @@ package com.dimanalyser.interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.ExponentNotScalarError;
@@ -13,10 +14,19 @@ import com.dimanalyser.variablemanager.VariableManager;
 public abstract class Interpreter {
 	
 	protected VariableManager mVariableManager;
+	private ExpressionParser mUnitDeclarationsParser;
 	
 	protected Interpreter() {
 		Globals.initUnits();
 		mVariableManager = new VariableManager();
+		mUnitDeclarationsParser = new ExpressionParser();
+		mUnitDeclarationsParser.addBraces("(",")");
+		mUnitDeclarationsParser.addBinaryOperatorHierarchy(new String[]{
+				"*","/"
+		});
+		mUnitDeclarationsParser.addBinaryOperatorHierarchy(new String[]{
+				"^"
+		});
 	}
 	
 	public abstract int interpretStatements(int linenumber, List<String> lines) throws InterpretationError;
@@ -28,8 +38,8 @@ public abstract class Interpreter {
 		int start = 0;
 		int end = 0;
 		
-		while((start=ExpressionParser.getInterpretedIndex(string, "U(", end))<string.length()) {
-			end = ExpressionParser.getInterpretedIndex(string, ")",start+2);
+		while((start=mUnitDeclarationsParser.getInterpretedIndex(string, "U(", end))<string.length()) {
+			end = mUnitDeclarationsParser.getInterpretedIndex(string, ")",start+2);
 			retval.add(parseUnitDeclaration(string.substring(start+2,end).replace(" ","")));
 			end = end + 1;
 		}
@@ -38,36 +48,32 @@ public abstract class Interpreter {
 	}
 	
 	private PhysicalUnit parseUnitDeclaration(String string) throws UnbalancedBracesError, ExponentNotScalarError {
-		int k=Math.max(ExpressionParser.getInterpretedIndexReverse(string,"*"),
-				ExpressionParser.getInterpretedIndexReverse(string,"/"));
-		
-		if (k!=-1) {
-			PhysicalUnit lhs = parseUnitDeclaration(string.substring(0, k));
-			PhysicalUnit rhs = parseUnitDeclaration(string.substring(k+1));
-			if (string.substring(k, k+1).equals("*")) {
-				return PhysicalUnit.product(lhs,rhs);
+		List<String> expr = mUnitDeclarationsParser.parseExpression(string);
+		Stack<PhysicalUnit> stack = new Stack<PhysicalUnit>();
+		for(String s : expr) {
+			if (s.equals("*")) {
+				PhysicalUnit rhs = stack.pop();
+				PhysicalUnit lhs = stack.pop();
+				stack.push(PhysicalUnit.product(lhs, rhs));
+			} else if (s.equals("/")) {
+				PhysicalUnit rhs = stack.pop();
+				PhysicalUnit lhs = stack.pop();
+				stack.push(PhysicalUnit.fraction(lhs, rhs));
+			} else if (s.equals("^")) {
+				PhysicalUnit rhs = stack.pop();
+				PhysicalUnit lhs = stack.pop();
+				stack.push(PhysicalUnit.power(lhs, rhs));
+			} else if (s.equals("(")) {
 			} else {
-				return PhysicalUnit.fraction(lhs,rhs);
+				try {
+					double f = Float.parseFloat(s);
+					stack.push(PhysicalUnit.product(Globals.UNIT_UNITLESS, f));
+				} catch (NumberFormatException nfe) {
+					stack.push(Globals.units.get(s));
+				}
 			}
 		}
 		
-		
-		k = ExpressionParser.getInterpretedIndexReverse(string,"^");
-		
-		if (k!=-1) {
-			PhysicalUnit lhs = parseUnitDeclaration(string.substring(0, k));
-			PhysicalUnit rhs = parseUnitDeclaration(string.substring(k+1));
-			return PhysicalUnit.power(lhs,rhs);
-		}
-		
-		if (string.startsWith("(")) {
-			return parseUnitDeclaration(string.substring(1, string.length()-1));
-		}
-		
-		try {
-			return PhysicalUnit.product(Globals.UNIT_UNITLESS, Double.parseDouble(string));
-		} catch(NumberFormatException nfe) {
-			return Globals.units.get(string);
-		}
+		return stack.pop();
 	}
 }

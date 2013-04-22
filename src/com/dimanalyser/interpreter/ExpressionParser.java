@@ -1,7 +1,6 @@
 package com.dimanalyser.interpreter;
 
 import java.util.ArrayList;
-import java.util.EmptyStackException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
@@ -29,7 +28,6 @@ public class ExpressionParser {
 		mQuotesEscape = new ArrayList<Character>();
 		mBinaryOperatorList = new ArrayList<String>();
 		mUnaryOperatorList = new ArrayList<String>();
-		
 	}
 
 	public void addBinaryOperatorHierarchy(String[] operatorlist) {
@@ -58,9 +56,9 @@ public class ExpressionParser {
 		mQuotesEscape.add(escape);
 	}
 	
-	public Stack<String> parseExpression(String expression) throws UnbalancedBracesError {
+	public List<String> parseExpression(String expression) throws UnbalancedBracesError {
 		
-		Stack<String> stack = new Stack<String>(); 
+		List<String> stack = new Stack<String>(); 
 		List<String> atoms = splitExpression(expression);
 		parseAtomsRecursive(stack,atoms,0,atoms.size()-1,0);
 		
@@ -69,7 +67,7 @@ public class ExpressionParser {
 	
 
 	
-	private void parseAtomsRecursive(Stack<String> stack, List<String> atoms,
+	private void parseAtomsRecursive(List<String> exp, List<String> atoms,
 			int start, int end, int operatorLevel) throws UnbalancedBracesError {
 		
 		int k = end;
@@ -77,18 +75,18 @@ public class ExpressionParser {
 		Stack<Integer> bracesStack = new Stack<Integer>();
 		
 		if (start==end) {
-			stack.push(atoms.get(start));
+			exp.add(atoms.get(start));
 			return;
 		}
 		
 		if (start>end) {
-			stack.push("");
+			exp.add("");
 			return;
 		}
 		
 		if (mQuotes.contains(atoms.get(start).charAt(0)) && start+1==end) {
-			stack.push(atoms.get(start+1));
-			stack.push(atoms.get(start));
+			exp.add(atoms.get(start+1));
+			exp.add(atoms.get(start));
 			return;
 		}
 		
@@ -115,9 +113,9 @@ public class ExpressionParser {
 				   !(k>start && mUnaryOperatorList.contains(atoms.get(k)) && mBinaryOperatorList.contains(atoms.get(k-1))) || 
 				   (k==start && mUnaryOperatorList.contains(atoms.get(k))) && operatorLevel==mOperatorHierarchy.size() || 
 				   (k==end && mUnaryOperatorList.contains(atoms.get(k))) && operatorLevel==mOperatorHierarchy.size()) {
-						parseAtomsRecursive(stack,atoms,start,k-1,operatorLevel);
-						parseAtomsRecursive(stack,atoms,k+1,end,operatorLevel);
-						stack.push(atoms.get(k));
+						parseAtomsRecursive(exp,atoms,start,k-1,operatorLevel);
+						parseAtomsRecursive(exp,atoms,k+1,end,operatorLevel);
+						exp.add(atoms.get(k));
 						return;
 				}
 			}
@@ -125,17 +123,17 @@ public class ExpressionParser {
 		}
 		if (mBracesClosing.contains(atoms.get(end))) {
 			if (mBracesOpening.indexOf(atoms.get(start)) == mBracesClosing.indexOf(atoms.get(end))) {
-				parseAtomsRecursive(stack,atoms,start+1,end-1,0);
-				stack.push(atoms.get(start));
+				parseAtomsRecursive(exp,atoms,start+1,end-1,0);
+				exp.add(atoms.get(start));
 			} else if (mBracesOpening.indexOf(atoms.get(start+1)) == mBracesClosing.indexOf(atoms.get(end))) {
-				parseAtomsRecursive(stack,atoms,start+2,end-1,0);
-				stack.push(atoms.get(start+1));
-				stack.push(atoms.get(start));
+				parseAtomsRecursive(exp,atoms,start+2,end-1,0);
+				exp.add(atoms.get(start+1));
+				exp.add(atoms.get(start));
 			} else {
-				parseAtomsRecursive(stack,atoms,start,end,operatorLevel+1);
+				parseAtomsRecursive(exp,atoms,start,end,operatorLevel+1);
 			}
 		} else {
-			parseAtomsRecursive(stack,atoms,start,end,operatorLevel+1);
+			parseAtomsRecursive(exp,atoms,start,end,operatorLevel+1);
 		}
 	}
 
@@ -179,23 +177,31 @@ public class ExpressionParser {
 					k++;
 				} else {					
 					String currentAtom = "";
-					for (String atom : mAtomsList) {
-						if (currentAtom.length()<atom.length() &&
-								k+atom.length()<=expression.length() &&
-								expression.substring(k, k+atom.length()).equals(atom)) {
-							currentAtom = atom;
-						}
-					}
 					
-					if (currentAtom.length()==0) {
+					
+					if (k>1 && (expression.charAt(k)=='-' || expression.charAt(k)=='+')
+						&& ("eEdD".contains(expression.substring(k-1,k)))
+						&& ("0123456789.".contains(expression.substring(k-2,k-1)))) {
 						k++;
 					} else {
-						if (lastAtomEnd != k) {
-							retval.add(expression.substring(lastAtomEnd, k));
+						for (String atom : mAtomsList) {
+							if (currentAtom.length()<atom.length() &&
+									k+atom.length()<=expression.length() &&
+									expression.substring(k, k+atom.length()).equals(atom)) {
+								currentAtom = atom;
+							}
 						}
-						retval.add(currentAtom);
-						k+=currentAtom.length();
-						lastAtomEnd = k;
+						
+						if (currentAtom.length()==0) {
+							k++;
+						} else {
+							if (lastAtomEnd != k) {
+								retval.add(expression.substring(lastAtomEnd, k));
+							}
+							retval.add(currentAtom);
+							k+=currentAtom.length();
+							lastAtomEnd = k;
+						}
 					}
 				}
 				
@@ -209,11 +215,12 @@ public class ExpressionParser {
 		return retval;
 	}
 	
+
 	
-	public static List<String> getParametersList(String string) throws UnbalancedBracesError {
+	public List<String> getParametersList(String string) throws UnbalancedBracesError {
 		List<String> retval = new ArrayList<String>();
- 		int k = string.indexOf("(");
-		if (k>0) {
+ 		int k = getInterpretedIndex(string, "(");
+		if (k<string.length()) {
 			retval.add(string.substring(0,k));
 			string = string.substring(k+1);
 			k = getInterpretedIndex(string, ")");
@@ -237,135 +244,158 @@ public class ExpressionParser {
 		return retval;
 	}
 	
-	public static int getInterpretedIndex(String string, String needle, int start) throws UnbalancedBracesError {
-		int k = start;
-		Stack<String> bstack = new Stack<String>();
+	
+	public int getInterpretedIndex(String expression, String needle, int start) throws UnbalancedBracesError {
 		boolean inliteral = false;
+		Character quote = '"';
+		int k = start;
+		Stack<Integer> bstack = new Stack<Integer>();
 
-		while(k!=string.length()) {
-			try {
-				if (!inliteral) {
-					
-					if (bstack.empty() && string.substring(k).startsWith(needle)) {
+		while (k < expression.length()) {
+			if (inliteral) {
+				
+				int qi = mQuotes.indexOf(expression.charAt(k));
+				
+				if ((qi >= 0) && (expression.charAt(k)==quote)) {
+					int kescapes=k-1;
+					while(kescapes > 0 && expression.charAt(kescapes)==mQuotesEscape.get(qi)) {
+						kescapes--;
+					}
+					if (((k-kescapes) & 1) == 1) {
+						inliteral = false;
+					}
+				}
+				k++;
+				
+			} else {
+				
+				if (mQuotes.contains(expression.charAt(k))) {
+					inliteral = true;
+					quote = expression.charAt(k);
+					k++;
+				} else {
+					if (bstack.empty() && expression.substring(k).startsWith(needle)) {
 						return k;
 					}
 					
-					switch (string.charAt(k)) {
-						case '"':
-						case '\'':
-							inliteral = true;
-						case '(':
-						case '[':
-							bstack.push(string.substring(k, k+1));
-							break;
-						case ')':
-							if(bstack.lastElement().equals("(")) {
-								bstack.pop();
-							} else {
-								throw new UnbalancedBracesError();
-							}
-							break;
-						case ']':
-							if(bstack.lastElement().equals("[")) {
-								bstack.pop();
-							} else {
-								throw new UnbalancedBracesError();
-							}
-							break;
+					String currentAtom = "";
+					for (String atom : mAtomsList) {
+						if (currentAtom.length()<atom.length() &&
+								k+atom.length()<=expression.length() &&
+								expression.substring(k, k+atom.length()).equals(atom)) {
+							currentAtom = atom;
+						}
 					}
-				} else {
-					if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
-						(string.substring(k, k+1).equals(bstack.lastElement()))) {
-						int kescapes=k-1;
-						while(kescapes > 0 && string.charAt(kescapes)=='\\') {
-							kescapes--;
+					
+					if (currentAtom.length()==0) {
+						k++;
+					} else {
+						int bi = 0;
+						if ((bi=mBracesClosing.indexOf(currentAtom))>=0) {
+							try {
+								if (bi==bstack.lastElement()) {
+									bstack.pop();
+								} else {
+									throw new UnbalancedBracesError();
+								}
+							} catch(NoSuchElementException e) {
+								throw new UnbalancedBracesError();
+								
+							}
+						} else if ((bi=mBracesOpening.indexOf(currentAtom))>=0) {
+							bstack.push(bi);
 						}
-						if (((k-kescapes) & 1) == 1) {
-							inliteral = false;
-							bstack.pop();
-						}
+						k+=currentAtom.length();
 					}
 				}
-			} catch(NoSuchElementException e) {
-				throw new UnbalancedBracesError();
 				
 			}
-			
-			k++;
 		}
+		
 		return k;
 	}
 	
-	public static int getInterpretedIndex(String string, String needle) throws UnbalancedBracesError {
+	public  int getInterpretedIndex(String string, String needle) throws UnbalancedBracesError {
 		return getInterpretedIndex(string, needle, 0);
 	}
 
-	public static int getInterpretedIndexReverse(String string, String needle, int start) throws UnbalancedBracesError {
-		int k = start;
-		Stack<String> bstack = new Stack<String>();
+	public int getInterpretedIndexReverse(String expression, String needle, int start) throws UnbalancedBracesError {
 		boolean inliteral = false;
+		Character quote = '"';
+		int k = start;
+		Stack<Integer> bstack = new Stack<Integer>();
 
-		while(k!=-1) {
-			try {
-				if (!inliteral) {
-					
-					if (bstack.empty() && string.substring(k).startsWith(needle)) {
-						return k;
+		while (k > -1) {
+			if (inliteral) {
+				
+				int qi = mQuotes.indexOf(expression.charAt(k));
+				
+				if ((qi >= 0) && (expression.charAt(k)==quote)) {
+					int kescapes=k-1;
+					while(kescapes > 0 && expression.charAt(kescapes)==mQuotesEscape.get(qi)) {
+						kescapes--;
 					}
-						
-						switch (string.charAt(k)) {
-						case '"':
-						case '\'':
-							inliteral = true;
-						case ')':
-						case ']':
-							bstack.push(string.substring(k, k+1));
-							break;
-						case '(':
-							if(bstack.lastElement().equals(")")) {
-								bstack.pop();
-							} else {
-								throw new UnbalancedBracesError();
-							}
-							break;
-						case '[':
-							if(bstack.lastElement().equals("]")) {
-								bstack.pop();
-							} else {
-								throw new UnbalancedBracesError();
-							}
-							break;
-						}
-				} else {
-					if ((string.charAt(k)=='"' || string.charAt(k)=='\'') &&
-						(string.substring(k, k+1).equals(bstack.lastElement()))) {
-						
-						int kescapes=k-1;
-						while(kescapes > 0 && string.charAt(kescapes)=='\\') {
-							kescapes--;
-						}
-						if (((k-kescapes) & 1) == 1) {
-							inliteral = false;
-							bstack.pop();
-						}
-						k = kescapes+1;
+					if (((k-kescapes) & 1) == 1) {
+						inliteral = false;
 					}
 				}
-			} catch(NoSuchElementException e) {
-				throw new UnbalancedBracesError();
-			} 
-			
-			k--;
+				k--;
+				
+			} else {
+				
+				if (mQuotes.contains(expression.charAt(k))) {
+					inliteral = true;
+					quote = expression.charAt(k);
+					k--;
+				} else {
+					if (bstack.empty() && expression.substring(k).startsWith(needle)) {
+						return k;
+					}
+					
+					String currentAtom = "";
+					for (String atom : mAtomsList) {
+						if (currentAtom.length()<atom.length() &&
+								k-atom.length()>=-1 &&
+								expression.substring(k-atom.length()+1, k+1).equals(atom)) {
+							currentAtom = atom;
+						}
+					}
+
+					if (currentAtom.length()==0) {
+						k--;
+					} else {
+						int bi = 0;
+						if ((bi=mBracesOpening.indexOf(currentAtom))>=0) {
+							try {
+								if (bi==bstack.lastElement()) {
+									bstack.pop();
+								} else {
+									throw new UnbalancedBracesError();
+								}
+							} catch(NoSuchElementException e) {
+								throw new UnbalancedBracesError();
+								
+							}
+						} else if ((bi=mBracesClosing.indexOf(currentAtom))>=0) {
+							bstack.push(bi);
+						}
+
+						k-=currentAtom.length();
+					}
+				}
+				
+			}
 		}
+		
 		return k;
 	}
 	
-	public static int getInterpretedIndexReverse(String string, String needle) throws UnbalancedBracesError {
+	public int getInterpretedIndexReverse(String string, String needle) throws UnbalancedBracesError {
 		return getInterpretedIndexReverse(string, needle, string.length()-1);
 	}
 
 	
-	public static List<String> getVariableList(String string, boolean stripBraces) throws UnbalancedBracesError {
+	public List<String> getVariableList(String string, boolean stripBraces) throws UnbalancedBracesError {
 		List<String> retval = new ArrayList<String>();
 		
 		int k = 0;
