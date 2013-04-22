@@ -52,7 +52,8 @@ public class DimAnalyser {
 				try {
 					linenumber = interpreter.interpretStatements(linenumber, lines);
 				} catch (InterpretationError e) {
-					System.err.println(String.format("Error in %s at line %i: %s",Globals.fileName,linenumber+1,e.getMessage()));
+					System.err.println(String.format("Error in %s at line %d: %s",Globals.fileName,linenumber+1,e.getMessage()));
+					linenumber++;
 				}
 			}
 		} catch (LanguageNotSupportedError e) {

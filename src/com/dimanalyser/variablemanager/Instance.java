@@ -1,6 +1,7 @@
 package com.dimanalyser.variablemanager;
 
 import com.dimanalyser.common.Globals;
+import com.dimanalyser.errors.UnitAlreadySetError;
 
 public class Instance {
 
@@ -22,6 +23,10 @@ public class Instance {
 
 	public PhysicalUnit getUnit() {
 		return Globals.UNIT_UNITLESS;
+	}
+
+	public void setUnit(PhysicalUnit lhs) throws UnitAlreadySetError {
+		throw new UnitAlreadySetError(mName);
 	}
 
 }

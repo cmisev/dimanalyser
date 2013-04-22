@@ -1,5 +1,7 @@
 package com.dimanalyser.variablemanager;
 
+import com.dimanalyser.errors.UnitAlreadySetError;
+
 public class VariableInstance extends Instance {
 
 	PhysicalUnit mUnit;
@@ -20,5 +22,19 @@ public class VariableInstance extends Instance {
 		} else {
 			return String.format("variable instance %s, unit not yet determined", getName());
 		}
+	}
+	
+	@Override
+	public void setUnit(PhysicalUnit unit) throws UnitAlreadySetError {
+		if (mUnit==null) {
+			mUnit = unit;
+		} else {
+			throw new UnitAlreadySetError(mName);
+		}
+	}
+	
+	@Override
+	public PhysicalUnit getUnit() {
+		return mUnit;
 	}
 }
