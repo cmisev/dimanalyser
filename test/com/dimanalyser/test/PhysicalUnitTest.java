@@ -23,7 +23,7 @@ public class PhysicalUnitTest {
 
 	@Test
 	public void testPhysicalUnit() {
-		assertNotNull(new PhysicalUnit(-1.54, 1.5,2.0,1/3.));
+		assertNotNull(new PhysicalUnit(-1.54, new double[]{1.5,2.0,1/3.}));
 	}
 
 	@Test
