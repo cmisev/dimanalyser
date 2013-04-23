@@ -34,7 +34,7 @@ public class FortranInterpreter extends Interpreter {
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"="
 		});
-		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
+		mFortranParser.addListSeparatorInHierarchy(new String[]{
 				","
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{

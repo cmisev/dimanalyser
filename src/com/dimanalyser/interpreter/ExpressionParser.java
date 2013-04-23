@@ -120,6 +120,21 @@ public class ExpressionParser {
 			}
 			
 			if (bracesStack.size()==0) {
+				if (operatorLevel < mOperatorHierarchy.size() && mOperatorHierarchy.get(operatorLevel).contains(atoms.get(k)) && 
+						mListSeparatorList.contains(atoms.get(k))) {
+					parseAtomsRecursive(exp, atoms, start, k-1, operatorLevel);
+					StackElement lelm = exp.get(exp.size()-1);
+					if (lelm.getExpression().equals(atoms.get(k))) {
+						exp.remove(exp.size()-1);
+						parseAtomsRecursive(exp, atoms, k+1, end, operatorLevel);
+						exp.add(new StackElement(atoms.get(k),lelm.getOperandsCount()+1));
+					} else {
+						parseAtomsRecursive(exp, atoms, k+1, end, operatorLevel);
+						exp.add(new StackElement(atoms.get(k),2));
+					}
+					return;
+				}
+				
 				if(operatorLevel < mOperatorHierarchy.size() && mOperatorHierarchy.get(operatorLevel).contains(atoms.get(k)) &&
 				   !(k>start && mUnaryOperatorList.contains(atoms.get(k)) && mBinaryOperatorList.contains(atoms.get(k-1))) || 
 				   (k==start && mUnaryOperatorList.contains(atoms.get(k))) && operatorLevel==mOperatorHierarchy.size() || 
@@ -129,6 +144,8 @@ public class ExpressionParser {
 						exp.add(new StackElement(atoms.get(k),2));
 						return;
 				}
+				
+
 			}
 			k--;
 		}
