@@ -29,7 +29,9 @@ public class VariableInstance extends Instance {
 		if (mUnit==null) {
 			mUnit = unit;
 		} else {
-			throw new UnitAlreadySetError(mName);
+			if (!mUnit.equals(unit)) {
+				throw new UnitAlreadySetError(mName);
+			}
 		}
 	}
 	
@@ -37,4 +39,5 @@ public class VariableInstance extends Instance {
 	public PhysicalUnit getUnit() {
 		return mUnit;
 	}
+
 }

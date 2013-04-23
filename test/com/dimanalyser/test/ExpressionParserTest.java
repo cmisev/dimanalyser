@@ -163,7 +163,6 @@ public class ExpressionParserTest {
 			assertEquals(3, actual.size());
 			
 			actual=ep.parseExpression("function(a,b++*-5,-c(:,5,6))");
-			System.out.println(actual.toString());
 			assertEquals("function", actual.get(18).toString());
 			assertEquals("(", actual.get(17).toString());
 			assertEquals(",", actual.get(16).toString());

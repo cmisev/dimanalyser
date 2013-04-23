@@ -17,15 +17,19 @@ import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
 import com.dimanalyser.errors.UnitsDontMatchError;
 import com.dimanalyser.variablemanager.FunctionInstance;
 import com.dimanalyser.variablemanager.InheritanceLevel;
+import com.dimanalyser.variablemanager.Instance;
 import com.dimanalyser.variablemanager.PhysicalUnit;
 import com.dimanalyser.variablemanager.VariableInstance;
 
 public class FortranInterpreter extends Interpreter {
 
 	private ExpressionParser mFortranParser;
+	FunctionInstance mCurrentFunctionInstance;
 	
 	public FortranInterpreter() {
 		super();
+		
+		mCurrentFunctionInstance = null;
 		mFortranParser = new ExpressionParser();
 
 		mFortranParser.addBraces("(", ")");
@@ -68,7 +72,6 @@ public class FortranInterpreter extends Interpreter {
 		String comment = "";
 		String instructions = "&";
 		int linesinterpreted = 0;
-		FunctionInstance currentFunctionInstance = null;
 		
 		
 		while(instructions.endsWith("&")) {
@@ -90,12 +93,17 @@ public class FortranInterpreter extends Interpreter {
 			mVariableManager.enterScope("PROGRAM", InheritanceLevel.SCOPE_PRIVATE);
 		} else if (instructions.startsWith("SUBROUTINE ")) {
 			List<String> parameterList = mFortranParser.getParametersList(instructions.substring(11));
-			mVariableManager.enterScope(parameterList.get(0), InheritanceLevel.SCOPE_PRIVATE);
-			currentFunctionInstance = new FunctionInstance(parameterList.get(0), InheritanceLevel.SCOPE_PRIVATE, Globals.UNIT_UNITLESS);
-			mVariableManager.addInstance(currentFunctionInstance);
-			for(int i=1; i<parameterList.size(); i++) {
-				currentFunctionInstance.addParameter(parameterList.get(i));
+			
+			try {
+				mCurrentFunctionInstance = new FunctionInstance(parameterList.get(0).trim(), InheritanceLevel.SCOPE_PRIVATE, Globals.UNIT_UNITLESS);
+				mVariableManager.addInstance(mCurrentFunctionInstance);
+			} catch(InstanceExistsError ie) {
+				mCurrentFunctionInstance = (FunctionInstance) mVariableManager.getInstance(parameterList.get(0).trim());
 			}
+			for(int i=1; i<parameterList.size(); i++) {
+				mCurrentFunctionInstance.setParameterName(i-1,(parameterList.get(i)));
+			}
+			mVariableManager.enterScope(parameterList.get(0), InheritanceLevel.SCOPE_PRIVATE);
 			
 		} else if (instructions.startsWith("REAL")) {
 			List<String> variableList = 
@@ -106,25 +114,26 @@ public class FortranInterpreter extends Interpreter {
 			
 			if (units.size()==variableList.size()) {
 				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(currentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(i));
+					declareInstance(mCurrentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(i));
 				}
 			} else if (units.size()==1) {
 				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(currentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(0));
+					declareInstance(mCurrentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(0));
 				}
 			} else if (units.size()==0) {
 				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(currentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,null);
+					declareInstance(mCurrentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,null);
 				}
 			} else {
 				throw new UnitDeclarationsDontMatchError();
 			}
-			
+		} else if (instructions.startsWith("CALL ")) {
+			checkUnits(instructions.substring(5));
 		} else if (instructions.startsWith("END PROGRAM") || instructions.startsWith("END SUBROUTINE")) {
 			mVariableManager.leaveScope();
-			currentFunctionInstance = null;
+			mCurrentFunctionInstance = null;
 		} else if (instructions.startsWith("CONTAINS")) {
-			currentFunctionInstance = null;
+			mCurrentFunctionInstance = null;
 		} else if (!instructions.trim().equals("")) {
 			checkUnits(instructions);
 		}
@@ -135,7 +144,7 @@ public class FortranInterpreter extends Interpreter {
 	
 	
 	private void declareInstance(FunctionInstance currentFunctionInstance,
-			String name, int accessLevel, PhysicalUnit unit) throws InstanceExistsError, UnitAlreadySetError {
+			String name, int accessLevel, PhysicalUnit unit) throws InstanceExistsError, UnitAlreadySetError, InstanceNotFoundError {
 		if (currentFunctionInstance!=null && currentFunctionInstance.hasParameter(name)) {
 			currentFunctionInstance.getParameter(name).setUnit(unit);
 		}
@@ -147,11 +156,12 @@ public class FortranInterpreter extends Interpreter {
 		}
 	}
 
-	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError {
+	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError {
 		List<StackElement> expr = mFortranParser.parseExpression(expression);
 		Stack<StackElement> stack = new Stack<StackElement>();
 		
-		for(StackElement s : expr) {
+		for(int k =0; k<expr.size(); k++) {
+			StackElement s = expr.get(k);
 			if (s.equals("*")) {
 				StackElement rhs = stack.pop();
 				StackElement lhs = stack.pop();
@@ -187,12 +197,57 @@ public class FortranInterpreter extends Interpreter {
 				stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),lhs.getUnit()));
 			} else if (s.equals("(")) {
 				stack.lastElement().setExpression((String.format("(%s)", stack.lastElement().getExpression())));
+			} else if (s.equals(",")) {
+				stack.push(s);
 			} else {
 				try {
 					double f = Float.parseFloat(s.getExpression());
 					s.setUnit(PhysicalUnit.getUnitless(f));
 				} catch (NumberFormatException nfe) {
-					s.setUnit(mVariableManager.getInstance(s.getExpression().trim()).getUnit());
+					
+
+					
+					if (stack.size()>0 && stack.lastElement().getExpression().charAt(0)=='(') {
+						int parameterCount = 1;
+						if (stack.lastElement().equals("(,)")) {
+							parameterCount = stack.pop().getOperandsCount();
+						} else if (stack.lastElement().equals("()")) {
+							parameterCount = 0;
+							stack.pop();
+						}
+						try {
+							Instance instance = mVariableManager.getInstance(s.getExpression().trim());
+							s.setUnit(instance.getUnit());
+							if (instance instanceof FunctionInstance) {
+								FunctionInstance fi = (FunctionInstance) instance;
+								for (int i=0; i<parameterCount; i++) {
+									if (!fi.getParameter(i).getUnit().equals(stack.get(stack.size()-parameterCount+i).getUnit())){
+										throw new UnitsDontMatchError(i+1, stack.get(stack.size()-parameterCount+i), fi.getParameter(i).getUnit(), s);
+									}
+								}
+							}
+						} catch (InstanceNotFoundError inf) {
+							FunctionInstance fi = new FunctionInstance(s.getExpression().trim(), InheritanceLevel.SCOPE_PUBLIC);
+							mVariableManager.addInstance(fi);
+							for (int i=0; i<parameterCount; i++) {
+								fi.addParameter(stack.get(stack.size()-parameterCount+i).getUnit());
+							}
+						}
+						
+						
+						if(parameterCount==0) {
+							s.setExpression(s.getExpression()+"()");
+						} else {
+							String parameters = stack.pop().getExpression();
+							for (int i=1; i<parameterCount; i++) {
+								parameters+=","+stack.pop().getExpression();
+							}
+							s.setExpression(s.getExpression()+"("+parameters+")");
+						}
+					} else {
+						Instance instance = mVariableManager.getInstance(s.getExpression().trim());
+						s.setUnit(instance.getUnit());
+					}
 				}
 				stack.push(s);
 			}

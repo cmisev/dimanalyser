@@ -10,7 +10,7 @@ PROGRAM test
 
     energy = 0.5*mass*velocity**2
 
-    !CALL testsubroutine(energy,mass,velocity)
+    CALL testsubroutine(mass,mass,speed)
 
 CONTAINS
 
