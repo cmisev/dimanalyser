@@ -7,41 +7,45 @@ public class PhysicalUnit {
 
 	double[] mBaseUnits;
 	double mScaling;
+	double mValue;
 	
-	public PhysicalUnit(double scaling,double[] baseunits) {
+	public PhysicalUnit(double value,double scaling,double[] baseunits) {
 		mBaseUnits = new double[Globals.NUM_BASEUNITS];
 		
 		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
 			mBaseUnits[k] = baseunits[k];
 		}
 		mScaling = scaling;
+		mValue = value;
 	}
+	
+	
+
+	public PhysicalUnit(double scaling, double[] basunits) {
+		this(1.0,scaling,basunits);
+	}
+	
+	public PhysicalUnit( double[] basunits) {
+		this(1.0,1.0,basunits);
+	}
+
+
 
 	public static PhysicalUnit product(PhysicalUnit lhs, PhysicalUnit rhs) {
 		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
-		boolean lhsunitless = true;
-		boolean rhsunitless = true;
 		
 		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
 			baseUnits[k] = lhs.getBaseUnits()[k] + rhs.getBaseUnits()[k];
-			if (lhs.getBaseUnits()[k]!=0.0) {
-				lhsunitless = false;
-			}
-			if (rhs.getBaseUnits()[k]!=0.0) {
-				rhsunitless = false;
-			}
 		}
-		if (!lhsunitless && !rhsunitless) {
-			return new PhysicalUnit(lhs.getScaling()*rhs.getScaling(), baseUnits);
-		} else if (lhsunitless && !rhsunitless) {
-			return rhs;
-		} else if (!lhsunitless && rhsunitless) {
-			return lhs;
-		} else {
-			return Globals.UNIT_UNITLESS;
-		}
+		return new PhysicalUnit(lhs.getValue()*rhs.getValue(),lhs.getScaling()*rhs.getScaling(), baseUnits);
 	}
 	
+	public double getValue() {
+		return mValue;
+	}
+
+
+
 	public static PhysicalUnit fraction(PhysicalUnit lhs, PhysicalUnit rhs) {
 		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
 		
@@ -54,16 +58,18 @@ public class PhysicalUnit {
 	
 	public static PhysicalUnit power(PhysicalUnit lhs, PhysicalUnit rhs) throws ExponentNotScalarError {
 		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
-				
+		
+		if (rhs.getScaling()!=1.0) throw new ExponentNotScalarError();
+		
 		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
 			if (rhs.getBaseUnits()[k]!=0) {
 				throw new ExponentNotScalarError();
 			}
-			baseUnits[k] = lhs.getBaseUnits()[k]*rhs.getScaling();
+			baseUnits[k] = lhs.getBaseUnits()[k]*rhs.getValue();
 			
 		}
 		
-		return new PhysicalUnit(Math.pow(lhs.getScaling(),rhs.getScaling()), baseUnits);
+		return new PhysicalUnit(Math.pow(lhs.getValue(),rhs.getValue()),Math.pow(lhs.getScaling(),rhs.getValue()), baseUnits);
 	}
 	
 	
@@ -77,7 +83,7 @@ public class PhysicalUnit {
 
 	public static PhysicalUnit product(PhysicalUnit lhs,
 			double rhs) {
-		return new PhysicalUnit(lhs.getScaling()*rhs,lhs.getBaseUnits());
+		return new PhysicalUnit(rhs,lhs.getScaling(),lhs.getBaseUnits());
 	}
 	
 	public String toString() {
@@ -124,5 +130,9 @@ public class PhysicalUnit {
 			retval += retval*7+((int) mBaseUnits[k])+3;
 		}
 		return retval;
+	}
+
+	public static PhysicalUnit getUnitless(double f) {
+		return product(Globals.UNIT_UNITLESS, f);
 	}
 }

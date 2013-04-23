@@ -12,6 +12,7 @@ public class ExpressionParser {
 	List<String> mAtomsList;
 	List<String> mBinaryOperatorList;
 	List<String> mUnaryOperatorList;
+	List<String> mListSeparatorList;
 	List<List<String>> mOperatorHierarchy;
 	List<String> mBracesOpening;
 	List<String> mBracesClosing;
@@ -28,14 +29,24 @@ public class ExpressionParser {
 		mQuotesEscape = new ArrayList<Character>();
 		mBinaryOperatorList = new ArrayList<String>();
 		mUnaryOperatorList = new ArrayList<String>();
+		mListSeparatorList = new ArrayList<String>();
 	}
 
-	public void addBinaryOperatorHierarchy(String[] operatorlist) {
+	public void addBinaryOperatorInHierarchy(String[] operatorlist) {
 		mOperatorHierarchy.add(new ArrayList<String>());
 		for(String operator : operatorlist) {
 			mOperatorHierarchy.get(mOperatorHierarchy.size()-1).add(operator);
 			mAtomsList.add(operator);
 			mBinaryOperatorList.add(operator);
+		}
+	}
+	
+	public void addListSeparatorInHierarchy(String[] operatorlist) {
+		mOperatorHierarchy.add(new ArrayList<String>());
+		for(String operator : operatorlist) {
+			mOperatorHierarchy.get(mOperatorHierarchy.size()-1).add(operator);
+			mAtomsList.add(operator);
+			mListSeparatorList.add(operator);
 		}
 	}
 	
@@ -56,9 +67,9 @@ public class ExpressionParser {
 		mQuotesEscape.add(escape);
 	}
 	
-	public List<String> parseExpression(String expression) throws UnbalancedBracesError {
+	public List<StackElement> parseExpression(String expression) throws UnbalancedBracesError {
 		
-		List<String> stack = new Stack<String>(); 
+		List<StackElement> stack = new Stack<StackElement>(); 
 		List<String> atoms = splitExpression(expression);
 		parseAtomsRecursive(stack,atoms,0,atoms.size()-1,0);
 		
@@ -67,7 +78,7 @@ public class ExpressionParser {
 	
 
 	
-	private void parseAtomsRecursive(List<String> exp, List<String> atoms,
+	private void parseAtomsRecursive(List<StackElement> exp, List<String> atoms,
 			int start, int end, int operatorLevel) throws UnbalancedBracesError {
 		
 		int k = end;
@@ -75,18 +86,18 @@ public class ExpressionParser {
 		Stack<Integer> bracesStack = new Stack<Integer>();
 		
 		if (start==end) {
-			exp.add(atoms.get(start));
+			exp.add(new StackElement(atoms.get(start)));
 			return;
 		}
 		
 		if (start>end) {
-			exp.add("");
+			exp.add(new StackElement(""));
 			return;
 		}
 		
 		if (mQuotes.contains(atoms.get(start).charAt(0)) && start+1==end) {
-			exp.add(atoms.get(start+1));
-			exp.add(atoms.get(start));
+			exp.add(new StackElement(atoms.get(start+1)));
+			exp.add(new StackElement(atoms.get(start),1));
 			return;
 		}
 		
@@ -115,7 +126,7 @@ public class ExpressionParser {
 				   (k==end && mUnaryOperatorList.contains(atoms.get(k))) && operatorLevel==mOperatorHierarchy.size()) {
 						parseAtomsRecursive(exp,atoms,start,k-1,operatorLevel);
 						parseAtomsRecursive(exp,atoms,k+1,end,operatorLevel);
-						exp.add(atoms.get(k));
+						exp.add(new StackElement(atoms.get(k),2));
 						return;
 				}
 			}
@@ -124,11 +135,11 @@ public class ExpressionParser {
 		if (mBracesClosing.contains(atoms.get(end))) {
 			if (mBracesOpening.indexOf(atoms.get(start)) == mBracesClosing.indexOf(atoms.get(end))) {
 				parseAtomsRecursive(exp,atoms,start+1,end-1,0);
-				exp.add(atoms.get(start));
+				exp.add(new StackElement(atoms.get(start),1));
 			} else if (mBracesOpening.indexOf(atoms.get(start+1)) == mBracesClosing.indexOf(atoms.get(end))) {
 				parseAtomsRecursive(exp,atoms,start+2,end-1,0);
-				exp.add(atoms.get(start+1));
-				exp.add(atoms.get(start));
+				exp.add(new StackElement(atoms.get(start+1),1));
+				exp.add(new StackElement(atoms.get(start),1));
 			} else {
 				parseAtomsRecursive(exp,atoms,start,end,operatorLevel+1);
 			}

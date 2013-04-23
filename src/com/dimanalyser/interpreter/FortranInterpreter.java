@@ -31,28 +31,28 @@ public class FortranInterpreter extends Interpreter {
 		mFortranParser.addBraces("(", ")");
 		mFortranParser.addBraces("(/", "/)");
 		mFortranParser.addQuotes('"', '\\');
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"="
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				","
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				".and.",".or."
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				".eq.",".ne."
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				".lt.",".gt.",".ge.",".le."
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"+","-"
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"*","/"
 		});
-		mFortranParser.addBinaryOperatorHierarchy(new String[]{
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"**"
 		});
 		
@@ -148,67 +148,53 @@ public class FortranInterpreter extends Interpreter {
 	}
 
 	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError {
-		List<String> expr = mFortranParser.parseExpression(expression);
-		Stack<PhysicalUnit> pstack = new Stack<PhysicalUnit>();
-		Stack<String> estack = new Stack<String>();
+		List<StackElement> expr = mFortranParser.parseExpression(expression);
+		Stack<StackElement> stack = new Stack<StackElement>();
 		
-		for(String s : expr) {
+		for(StackElement s : expr) {
 			if (s.equals("*")) {
-				PhysicalUnit rhs = pstack.pop();
-				PhysicalUnit lhs = pstack.pop();
-				String srhs = estack.pop();
-				String slhs = estack.pop();
-				pstack.push(PhysicalUnit.product(lhs, rhs));
-				estack.push(String.format("%s*%s", slhs, srhs));
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
+				stack.push(new StackElement(String.format("%s*%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.product(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("/")) {
-				PhysicalUnit rhs = pstack.pop();
-				PhysicalUnit lhs = pstack.pop();
-				String srhs = estack.pop();
-				String slhs = estack.pop();
-				pstack.push(PhysicalUnit.fraction(lhs, rhs));
-				estack.push(String.format("%s/%s", slhs, srhs));
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
+				stack.push(new StackElement(String.format("%s/%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.fraction(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("**")) {
-				PhysicalUnit rhs = pstack.pop();
-				PhysicalUnit lhs = pstack.pop();
-				String srhs = estack.pop();
-				String slhs = estack.pop();
-				pstack.push(PhysicalUnit.power(lhs, rhs));
-				estack.push(String.format("%s**%s", slhs, srhs));
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
+				stack.push(new StackElement(String.format("%s**%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.power(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("+") || s.equals("-") || 
 					s.equals(".le.") || s.equals(".lt.") || 
 					s.equals(".gt.") || s.equals(".ge.") || 
 					s.equals(".eq.") || s.equals("=")) {
-				PhysicalUnit rhs = pstack.pop();
-				PhysicalUnit lhs = pstack.pop();
-				String srhs = estack.pop();
-				String slhs = estack.pop();
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
 				
-				if (rhs==null && lhs==null) {
+				if (rhs.getUnit()==null && lhs.getUnit()==null) {
 					throw new NotImplementedException();
-				} else if (rhs==null) {
-					mVariableManager.getInstance(srhs).setUnit(lhs);
-				} else if (lhs==null) {
-					mVariableManager.getInstance(slhs).setUnit(rhs);
+				} else if (rhs.getUnit()==null) {
+					mVariableManager.getInstance(rhs.getExpression().trim()).setUnit(lhs.getUnit());
+					rhs.setUnit(lhs.getUnit());
+				} else if (lhs.getUnit()==null) {
+					mVariableManager.getInstance(lhs.getExpression().trim()).setUnit(rhs.getUnit());
+					lhs.setUnit(rhs.getUnit());
 				} else {
-					if (!lhs.equals(rhs)) {
-						throw new UnitsDontMatchError(lhs, rhs, slhs, srhs, s);
-					} else {
-						pstack.push(lhs);
+					if (!lhs.getUnit().equals(rhs.getUnit())) {
+						throw new UnitsDontMatchError(lhs, rhs, s);
 					}
 				}
-				estack.push(String.format("%s%s%s", slhs, s, srhs));
+				stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),lhs.getUnit()));
 			} else if (s.equals("(")) {
-				String lelm = estack.pop();
-				estack.push(String.format("(%s)", lelm));
+				stack.lastElement().setExpression((String.format("(%s)", stack.lastElement().getExpression())));
 			} else {
 				try {
-					double f = Float.parseFloat(s);
-					pstack.push(PhysicalUnit.product(Globals.UNIT_UNITLESS, f));
+					double f = Float.parseFloat(s.getExpression());
+					s.setUnit(PhysicalUnit.getUnitless(f));
 				} catch (NumberFormatException nfe) {
-					System.out.println(mVariableManager.getInstance(s.trim()).toString());
-					pstack.push(mVariableManager.getInstance(s.trim()).getUnit());
+					s.setUnit(mVariableManager.getInstance(s.getExpression().trim()).getUnit());
 				}
-				estack.push(s.trim());
+				stack.push(s);
 			}
 		}
 	}

@@ -60,7 +60,7 @@ public class PhysicalUnitTest {
 		
 		
 		assertFalse(Globals.units.get("N").equals(Globals.UNIT_UNITLESS));
-		assertFalse(Globals.UNIT_UNITLESS.equals(PhysicalUnit.product(Globals.UNIT_UNITLESS, 1.24)));
+		assertTrue(Globals.UNIT_UNITLESS.equals(PhysicalUnit.product(Globals.UNIT_UNITLESS, 1.24)));
 		
 	}
 
@@ -79,7 +79,6 @@ public class PhysicalUnitTest {
 			fail("Thrown ExponentNotScalarError while it shouldn't");
 		}
 
-		assertEquals("2.00000",PhysicalUnit.product(Globals.UNIT_UNITLESS, 2.0).toString());
 		
 		
 	}

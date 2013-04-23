@@ -21,10 +21,10 @@ public abstract class Interpreter {
 		mVariableManager = new VariableManager();
 		mUnitDeclarationsParser = new ExpressionParser();
 		mUnitDeclarationsParser.addBraces("(",")");
-		mUnitDeclarationsParser.addBinaryOperatorHierarchy(new String[]{
+		mUnitDeclarationsParser.addBinaryOperatorInHierarchy(new String[]{
 				"*","/"
 		});
-		mUnitDeclarationsParser.addBinaryOperatorHierarchy(new String[]{
+		mUnitDeclarationsParser.addBinaryOperatorInHierarchy(new String[]{
 				"^"
 		});
 	}
@@ -48,32 +48,34 @@ public abstract class Interpreter {
 	}
 	
 	private PhysicalUnit parseUnitDeclaration(String string) throws UnbalancedBracesError, ExponentNotScalarError {
-		List<String> expr = mUnitDeclarationsParser.parseExpression(string);
-		Stack<PhysicalUnit> stack = new Stack<PhysicalUnit>();
-		for(String s : expr) {
+		List<StackElement> expr = mUnitDeclarationsParser.parseExpression(string);
+		
+		Stack<StackElement> stack = new Stack<StackElement>();
+		for(StackElement s : expr) {
 			if (s.equals("*")) {
-				PhysicalUnit rhs = stack.pop();
-				PhysicalUnit lhs = stack.pop();
-				stack.push(PhysicalUnit.product(lhs, rhs));
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
+				stack.push(new StackElement(String.format("%s*%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.product(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("/")) {
-				PhysicalUnit rhs = stack.pop();
-				PhysicalUnit lhs = stack.pop();
-				stack.push(PhysicalUnit.fraction(lhs, rhs));
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
+				stack.push(new StackElement(String.format("%s/%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.fraction(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("^")) {
-				PhysicalUnit rhs = stack.pop();
-				PhysicalUnit lhs = stack.pop();
-				stack.push(PhysicalUnit.power(lhs, rhs));
+				StackElement rhs = stack.pop();
+				StackElement lhs = stack.pop();
+				stack.push(new StackElement(String.format("%s^%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.power(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("(")) {
 			} else {
 				try {
-					double f = Float.parseFloat(s);
-					stack.push(PhysicalUnit.product(Globals.UNIT_UNITLESS, f));
+					double f = Float.parseFloat(s.getExpression());
+					s.setUnit(PhysicalUnit.getUnitless(f));
 				} catch (NumberFormatException nfe) {
-					stack.push(Globals.units.get(s));
+					s.setUnit(Globals.units.get(s.getExpression()));
 				}
+				stack.push(s);
 			}
 		}
 		
-		return stack.pop();
+		return stack.pop().getUnit();
 	}
 }

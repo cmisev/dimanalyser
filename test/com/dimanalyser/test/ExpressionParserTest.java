@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import com.dimanalyser.errors.UnbalancedBracesError;
 import com.dimanalyser.interpreter.ExpressionParser;
+import com.dimanalyser.interpreter.StackElement;
 
 public class ExpressionParserTest {
 
@@ -24,28 +25,28 @@ public class ExpressionParserTest {
 		ep.addBraces("[", "]");
 		ep.addQuotes('"', '\\');
 		ep.addQuotes('\'', '\\');
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"="
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				","
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				".and.",".or."
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				".eq.",".ne."
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				".lt.",".gt.",".ge.",".le."
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"+","-"
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"*","/"
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"**"
 		});
 		
@@ -63,28 +64,28 @@ public class ExpressionParserTest {
 		ep.addBraces("(", ")");
 		ep.addBraces("(/", "/)");
 		ep.addQuotes('"', '\\');
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"="
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				","
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				".and.",".or."
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				".eq.",".ne."
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				".lt.",".gt.",".ge.",".le."
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"+","-"
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"*","/"
 		});
-		ep.addBinaryOperatorHierarchy(new String[]{
+		ep.addBinaryOperatorInHierarchy(new String[]{
 				"**"
 		});
 		
@@ -99,104 +100,104 @@ public class ExpressionParserTest {
 //		}
 		//  calculate_force(\"coriolis\",2), calculate_force(), calculate_force(2.0)
 		try {
-			List<String> actual = ep.parseExpression("forces = (/ 1.0, -3.0, (mass1+mass2-mass3)*distance/time**2, -force2+force3 /)".replace(" ",""));
-			assertEquals("=", actual.get(26));
-			assertEquals("(/", actual.get(25));
-			assertEquals(",", actual.get(24));
-			assertEquals("+", actual.get(23));
-			assertEquals("force3", actual.get(22));
-			assertEquals("-", actual.get(21));
-			assertEquals("force2", actual.get(20));
-			assertEquals("", actual.get(19));
-			assertEquals(",", actual.get(18));
-			assertEquals("/", actual.get(17));
-			assertEquals("**", actual.get(16));
-			assertEquals("2", actual.get(15));
-			assertEquals("time", actual.get(14));
-			assertEquals("*", actual.get(13));
-			assertEquals("distance", actual.get(12));
-			assertEquals("(", actual.get(11));
-			assertEquals("-", actual.get(10));
-			assertEquals("mass3", actual.get(9));
-			assertEquals("+", actual.get(8));
-			assertEquals("mass2", actual.get(7));
-			assertEquals("mass1", actual.get(6));
-			assertEquals(",", actual.get(5));
-			assertEquals("-", actual.get(4));
-			assertEquals("3.0", actual.get(3));
-			assertEquals("", actual.get(2));
-			assertEquals("1.0", actual.get(1));
-			assertEquals("forces", actual.get(0));
+			List<StackElement> actual = ep.parseExpression("forces = (/ 1.0, -3.0, (mass1+mass2-mass3)*distance/time**2, -force2+force3 /)".replace(" ",""));
+			assertEquals("=", actual.get(26).toString());
+			assertEquals("(/", actual.get(25).toString());
+			assertEquals(",", actual.get(24).toString());
+			assertEquals("+", actual.get(23).toString());
+			assertEquals("force3", actual.get(22).toString());
+			assertEquals("-", actual.get(21).toString());
+			assertEquals("force2", actual.get(20).toString());
+			assertEquals("", actual.get(19).toString());
+			assertEquals(",", actual.get(18).toString());
+			assertEquals("/", actual.get(17).toString());
+			assertEquals("**", actual.get(16).toString());
+			assertEquals("2", actual.get(15).toString());
+			assertEquals("time", actual.get(14).toString());
+			assertEquals("*", actual.get(13).toString());
+			assertEquals("distance", actual.get(12).toString());
+			assertEquals("(", actual.get(11).toString());
+			assertEquals("-", actual.get(10).toString());
+			assertEquals("mass3", actual.get(9).toString());
+			assertEquals("+", actual.get(8).toString());
+			assertEquals("mass2", actual.get(7).toString());
+			assertEquals("mass1", actual.get(6).toString());
+			assertEquals(",", actual.get(5).toString());
+			assertEquals("-", actual.get(4).toString());
+			assertEquals("3.0", actual.get(3).toString());
+			assertEquals("", actual.get(2).toString());
+			assertEquals("1.0", actual.get(1).toString());
+			assertEquals("forces", actual.get(0).toString());
 			assertEquals(27, actual.size());
 			
 			actual = ep.parseExpression("(val.lt.1e-5.and.val.gt.-tol)");
-			assertEquals("(", actual.get(9));
-			assertEquals(".and.", actual.get(8));
-			assertEquals(".gt.", actual.get(7));
-			assertEquals("-", actual.get(6));
-			assertEquals("tol", actual.get(5));
-			assertEquals("", actual.get(4));
-			assertEquals("val", actual.get(3));
-			assertEquals(".lt.", actual.get(2));
-			assertEquals("1e-5", actual.get(1));
-			assertEquals("val", actual.get(0));
+			assertEquals("(", actual.get(9).toString());
+			assertEquals(".and.", actual.get(8).toString());
+			assertEquals(".gt.", actual.get(7).toString());
+			assertEquals("-", actual.get(6).toString());
+			assertEquals("tol", actual.get(5).toString());
+			assertEquals("", actual.get(4).toString());
+			assertEquals("val", actual.get(3).toString());
+			assertEquals(".lt.", actual.get(2).toString());
+			assertEquals("1e-5", actual.get(1).toString());
+			assertEquals("val", actual.get(0).toString());
 			assertEquals(10, actual.size());
 			
 			
 			actual = ep.parseExpression("(\"\",\"\\\"\",\"\")");
-			assertEquals("(", actual.get(8));
-			assertEquals(",", actual.get(7));
-			assertEquals("\"", actual.get(6));
-			assertEquals("", actual.get(5));
-			assertEquals(",", actual.get(4));
-			assertEquals("\"", actual.get(3));
-			assertEquals("\\\"", actual.get(2));
-			assertEquals("\"", actual.get(1));
-			assertEquals("", actual.get(0));
+			assertEquals("(", actual.get(8).toString());
+			assertEquals(",", actual.get(7).toString());
+			assertEquals("\"", actual.get(6).toString());
+			assertEquals("", actual.get(5).toString());
+			assertEquals(",", actual.get(4).toString());
+			assertEquals("\"", actual.get(3).toString());
+			assertEquals("\\\"", actual.get(2).toString());
+			assertEquals("\"", actual.get(1).toString());
+			assertEquals("", actual.get(0).toString());
 			assertEquals(9, actual.size());
 			
 			actual=ep.parseExpression("function()");
-			assertEquals("function", actual.get(2));
-			assertEquals("(", actual.get(1));
-			assertEquals("", actual.get(0));
+			assertEquals("function", actual.get(2).toString());
+			assertEquals("(", actual.get(1).toString());
+			assertEquals("", actual.get(0).toString());
 			assertEquals(3, actual.size());
 			
 			actual=ep.parseExpression("function(a,b++*-5,-c(:,5))");
-			assertEquals("function", actual.get(18));
-			assertEquals("(", actual.get(17));
-			assertEquals(",", actual.get(16));
-			assertEquals("-", actual.get(15));
-			assertEquals("c", actual.get(14));
-			assertEquals("(", actual.get(13));
-			assertEquals(",", actual.get(12));
-			assertEquals("5", actual.get(11));
-			assertEquals(":", actual.get(10));
-			assertEquals("", actual.get(9));
-			assertEquals(",", actual.get(8));
-			assertEquals("*", actual.get(7));
-			assertEquals("-", actual.get(6));
-			assertEquals("5", actual.get(5));
-			assertEquals("", actual.get(4));
-			assertEquals("++", actual.get(3));
-			assertEquals("", actual.get(2));
-			assertEquals("b", actual.get(1));
-			assertEquals("a", actual.get(0));
+			assertEquals("function", actual.get(18).toString());
+			assertEquals("(", actual.get(17).toString());
+			assertEquals(",", actual.get(16).toString());
+			assertEquals("-", actual.get(15).toString());
+			assertEquals("c", actual.get(14).toString());
+			assertEquals("(", actual.get(13).toString());
+			assertEquals(",", actual.get(12).toString());
+			assertEquals("5", actual.get(11).toString());
+			assertEquals(":", actual.get(10).toString());
+			assertEquals("", actual.get(9).toString());
+			assertEquals(",", actual.get(8).toString());
+			assertEquals("*", actual.get(7).toString());
+			assertEquals("-", actual.get(6).toString());
+			assertEquals("5", actual.get(5).toString());
+			assertEquals("", actual.get(4).toString());
+			assertEquals("++", actual.get(3).toString());
+			assertEquals("", actual.get(2).toString());
+			assertEquals("b", actual.get(1).toString());
+			assertEquals("a", actual.get(0).toString());
 			assertEquals(19, actual.size());
 			
 			actual=ep.parseExpression("1e-20,5.0e5,483.E-3,e-5,force-4.0e+5");
-			assertEquals(",", actual.get(12));
-			assertEquals("-", actual.get(11));
-			assertEquals("4.0e+5", actual.get(10));
-			assertEquals("force", actual.get(9));
-			assertEquals(",", actual.get(8));
-			assertEquals("-", actual.get(7));
-			assertEquals("5", actual.get(6));
-			assertEquals("e", actual.get(5));
-			assertEquals(",", actual.get(4));
-			assertEquals("483.E-3", actual.get(3));
-			assertEquals(",", actual.get(2));
-			assertEquals("5.0e5", actual.get(1));
-			assertEquals("1e-20", actual.get(0));
+			assertEquals(",", actual.get(12).toString());
+			assertEquals("-", actual.get(11).toString());
+			assertEquals("4.0e+5", actual.get(10).toString());
+			assertEquals("force", actual.get(9).toString());
+			assertEquals(",", actual.get(8).toString());
+			assertEquals("-", actual.get(7).toString());
+			assertEquals("5", actual.get(6).toString());
+			assertEquals("e", actual.get(5).toString());
+			assertEquals(",", actual.get(4).toString());
+			assertEquals("483.E-3", actual.get(3).toString());
+			assertEquals(",", actual.get(2).toString());
+			assertEquals("5.0e5", actual.get(1).toString());
+			assertEquals("1e-20", actual.get(0).toString());
 			assertEquals(13, actual.size());
 			
 			
@@ -228,7 +229,6 @@ public class ExpressionParserTest {
 	public void testGetParametersList() {
 		try {
 			List<String> actualList = ep.getParametersList("integrate_function( distance,force(:) , xmin,xmax, \"spline\")");
-			System.out.println(actualList.toString());
 			assertEquals(6, actualList.size());
 			assertEquals("integrate_function", actualList.get(0));
 			assertEquals("distance", actualList.get(1));
