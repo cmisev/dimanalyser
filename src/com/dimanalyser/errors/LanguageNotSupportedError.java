@@ -17,12 +17,13 @@
 
 package com.dimanalyser.errors;
 
-
+/**
+ * Error thrown if there is no interpreter present to interpret the desired programming language
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class LanguageNotSupportedError extends InterpretationError {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4659586835908480687L;
 
 	public LanguageNotSupportedError(String name) {

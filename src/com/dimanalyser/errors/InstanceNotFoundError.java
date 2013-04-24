@@ -16,13 +16,15 @@
  */
 package com.dimanalyser.errors;
 
-
+/**
+ * Error thrown in case a {@link com.dimanalyser.variablemanager.VariableManager#getInstance getInstance} call 
+ * attempts to get an instance which is not existing or not accessible in the existing scope or inherited scopes.
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class InstanceNotFoundError extends InterpretationError {
 	
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -6086043716684911573L;
 
 	public InstanceNotFoundError(String name) {

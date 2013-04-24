@@ -17,12 +17,14 @@
 
 package com.dimanalyser.errors;
 
-
+/**
+ * Error thrown in case an {@link com.dimanalyser.variablemanager.VariableManager#addInstance addInstance} call 
+ * attempts to add an instance with a name already existing in the scope.
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class InstanceExistsError extends InterpretationError {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -462724666466854980L;
 
 	public InstanceExistsError(String name) {

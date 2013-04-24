@@ -2,3 +2,5 @@
 .project
 bin
 org.eclipse.*
+/doc
+/javadoc.xml
