@@ -19,59 +19,131 @@ package com.dimanalyser.interpreter;
 
 import com.dimanalyser.variablemanager.PhysicalUnit;
 
+/**
+ * Expression stack element. Contains a chunk of an expression, either raw or already interpreted,
+ * having a phyiscal unit assigned to it.
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class StackElement {
 
+	/**
+	 * Human-readable string of the expression
+	 */
 	private String mExpression;
+	
+	/**
+	 * Unit attached to the expression may or may not be defined
+	 */
 	private PhysicalUnit mUnit;
+	
+	/**
+	 * If 0, the stack element is an operand and should be pushed onto the stack.
+	 * If a positive integer, it is an operator or an atom otherwise assembling several
+	 * sub-expressions acting on the <pre>mOperandsCount</pre> top-most elements of the stack.
+	 */
 	private int mOperandsCount;
 	
-	
+	/**
+	 * General Constructor
+	 * @param expression the human-readable string of the expression
+	 * @param operandsCount the number of operands the stack expression element is acting on (0 if operand)
+	 * @param unit resulting unit of the expression
+	 */
 	public StackElement(String expression, PhysicalUnit unit, int operandsCount) {
 		mExpression = expression;
 		mUnit = unit;
 		mOperandsCount = operandsCount;
 	}
 	
+	/**
+	 * Constructor initializing the stack element without the unit being defined
+	 * @param expression the human-readable string of the expression
+	 * @param operandsCount the number of operands the stack expression element is acting on (0 if operand)
+	 */
 	public StackElement(String expression, int operandsCount) {
 		this(expression,null,operandsCount);
 	}
 	
+	/**
+	 * Constructor initializing the stack element as an operand without the unit being defined
+	 * @param expression the human-readable string of the expression
+	 */
 	public StackElement(String expression) {
 		this(expression,0);
 	}
 
+	/**
+	 * Constructor initializing the stack element as an operand
+	 * @param expression the human-readable string of the expression
+	 * @param unit the unit of the operand
+	 */
 	public StackElement(String expression, PhysicalUnit unit) {
 		this(expression,unit,0);
 	}
 
+	/**
+	 * Set the human-readable string of the expression
+	 * @param expression the new human-readable string of the expression
+	 */
 	public void setExpression(String expression) {
 		mExpression = expression;
 	}
 	
+	/**
+	 * Set the unit resulting from the expression
+	 * @param unit the unit resulting from the expression
+	 */
 	public void setUnit(PhysicalUnit unit) {
 		mUnit = unit;
 	}
 	
+	/**
+	 * Get the human-readable string of the expression
+	 * @return the human-readable string of the expression
+	 */
 	public String getExpression() {
 		return mExpression;
 	}
 	
+	/**
+	 * Get the unit resulting from the expression
+	 * @return the unit resulting from the expression
+	 */
 	public PhysicalUnit getUnit() {
 		return mUnit;
 	}
 	
+	/**
+	 * Get the number of operands the chunk is acting on (0 if operand)
+	 * @return the number of operands the chunk is acting on (0 if operand)
+	 */
 	public int getOperandsCount() {
 		return mOperandsCount;
 	}
 	
+	/**
+	 * <pre>toString()</pre> implementation for purposes of debugging and identification
+	 */
 	public String toString() {
 		return mExpression;
 	}
 	
+	/**
+	 * Test if the human readable-expression matches a string
+	 * @param expr the string to be tested
+	 * @return <pre>true</pre> if the expressions match
+	 */
 	public boolean equals(String expr) {
 		return mExpression.equals(expr);
 	}
 	
+	/**
+	 * Test if a certain unit equals the unit of the expression
+	 * @param unit
+	 * @return <pre>true</pre> if the units match
+	 */
 	public boolean equals(PhysicalUnit unit) {
 		return mUnit.equals(unit);
 	}
