@@ -17,12 +17,15 @@
 
 package com.dimanalyser.errors;
 
+/**
+ * Error thrown in case a exponentiation with a non-scalar exponent occurred (e.g. 1 to the power of kg)
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class ExponentNotScalarError extends InterpretationError {
 
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7073000237145281096L;
 
 	public ExponentNotScalarError() {

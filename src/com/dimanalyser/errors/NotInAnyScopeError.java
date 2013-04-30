@@ -17,13 +17,17 @@
 
 package com.dimanalyser.errors;
 
+/**
+ * Error thrown by an {@link com.dimanalyser.interpreter.Interpreter Interpreter} subclass
+ * if the interpreter wants to leave a scope but it is currently on the highest-level 
+ * __GLOBAL__ scope
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class NotInAnyScopeError extends InterpretationError {
 
 
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6812788000927988093L;
 
 	public NotInAnyScopeError() {

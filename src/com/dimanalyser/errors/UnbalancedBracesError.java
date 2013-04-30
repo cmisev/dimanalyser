@@ -17,12 +17,13 @@
 
 package com.dimanalyser.errors;
 
+/**
+ * Error thrown if the parser encouters an unmatching brace, like "(]"
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class UnbalancedBracesError extends InterpretationError {
 
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 4639086983251752861L;
 
 	public UnbalancedBracesError() {

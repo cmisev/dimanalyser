@@ -17,6 +17,12 @@
 
 package com.dimanalyser.variablemanager;
 
+/**
+ * Static class holding constants describing the inheritance/access level
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class InheritanceLevel {
 	public static final int SCOPE_PRIVATE = 2;
 	public static final int SCOPE_PROTECTED = 1;

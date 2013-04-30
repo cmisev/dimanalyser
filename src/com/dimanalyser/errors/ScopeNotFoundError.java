@@ -17,12 +17,13 @@
 
 package com.dimanalyser.errors;
 
-
+/**
+ * Error thrown if a scope of a given name is not known to the {@link com.dimanalyser.variablemanager.VariableManager VariableManager}
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class ScopeNotFoundError extends InterpretationError {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 5906508565383644827L;
 
 	public ScopeNotFoundError(String name) {

@@ -19,11 +19,24 @@ package com.dimanalyser.interpreter;
 
 import com.dimanalyser.errors.LanguageNotSupportedError;
 
+/**
+ * Factory for concrete language interpreters
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class InterpreterFactory {
 
-	
+	/**
+	 * Return an instance of an interpreter of a given language
+	 * 
+	 * @param language the language of the interpreter
+	 * @return the interpreter instance
+	 * @throws LanguageNotSupportedError
+	 */
 	public static Interpreter getInterpreter(String language) throws LanguageNotSupportedError {
-		if (language.equals("fortran")) {
+		// TODO add identification by file extension
+		if (language.equalsIgnoreCase("fortran")) {
 			return new FortranInterpreter();
 		} else {
 			throw new LanguageNotSupportedError(language);

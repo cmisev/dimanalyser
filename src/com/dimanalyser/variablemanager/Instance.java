@@ -20,29 +20,70 @@ package com.dimanalyser.variablemanager;
 import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.UnitAlreadySetError;
 
-public class Instance {
+/**
+ * Class representing objects in mathematical expression that are not numerical constants (derived types, functions, variables).
+ * May or may not resolve to a given physical unit.
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
+abstract public class Instance {
 
+	/**
+	 * The name of the object
+	 */
 	protected String mName;
+	
+	/**
+	 * Access level of the object (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+	 */
 	int mAccessLevel;
 	
+	/**
+	 * Constructor, give the object the two main attributes that are common to all instances, a name and an access level.
+	 * 
+	 * @param name Name of the instance
+	 * @param accessLevel Access level of the instance (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+	 */
 	public Instance(String name, int accessLevel) {
 		mName = name;
 		mAccessLevel = accessLevel;
 	}
 	
+	/**
+	 * Get the name of the instance
+	 * 
+	 * @return the name of the instance
+	 */
 	public String getName() {
 		return mName;
 	}
-	
+		
+	/**
+	 * Get the access level
+	 * 
+	 * @return the access level
+	 */
 	public int getAccessLevel(){
 		return mAccessLevel;
 	}
 
+	/**
+	 * Get the physical unit of the instance. By default unitless.
+	 * 
+	 * @return the physical unit of the instance
+	 */
 	public PhysicalUnit getUnit() {
 		return Globals.UNIT_UNITLESS;
 	}
 
-	public void setUnit(PhysicalUnit lhs) throws UnitAlreadySetError {
+	/**
+	 * Set the physical unit of the instance.
+	 * 
+	 * @param unit the unit to be set.
+	 * @throws UnitAlreadySetError
+	 */
+	public void setUnit(PhysicalUnit unit) throws UnitAlreadySetError {
 		throw new UnitAlreadySetError(mName);
 	}
 

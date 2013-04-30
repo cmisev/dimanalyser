@@ -17,20 +17,50 @@
 
 package com.dimanalyser.variablemanager;
 
+/**
+ * class holding information of the nature of an inheritance.
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class Inheritance {
 
+	/**
+	 * The level of inheritance (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+	 */
 	private int mInheritanceLevel;
+	
+	/**
+	 * The scope inherited by this inheritance
+	 */
 	private Scope mScope;
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param scope The scope inherited by the inheritance
+	 * @param inheritanceLevel The level of inheritance (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+	 */
 	public Inheritance(Scope scope, int inheritanceLevel) {
 		mScope = scope;
 		mInheritanceLevel = inheritanceLevel;
 	}
 	
+	/**
+	 * Getter for the scope inherited by this inheritance
+	 * 
+	 * @return the scope inherited by this inheritance
+	 */
 	public Scope getScope() {
 		return mScope;
 	}
 	
+	
+	/**
+	 * Getter for the inheritance level
+	 * 
+	 * @return the inheritance level
+	 */
 	public int getInheritanceLevel() {
 		return mInheritanceLevel;
 	}

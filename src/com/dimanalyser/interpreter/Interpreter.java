@@ -28,11 +28,29 @@ import com.dimanalyser.errors.UnbalancedBracesError;
 import com.dimanalyser.variablemanager.PhysicalUnit;
 import com.dimanalyser.variablemanager.VariableManager;
 
+/**
+ * Abstract interpreter class the aim of an interpreter is to interpret the syntax of a specific
+ * programming language, to identify mathematical expressions and control sequences.
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public abstract class Interpreter {
 	
+	/**
+	 * The {@link VariableManager VariableManager} holding all objects and scopes identified so far.
+	 */
 	protected VariableManager mVariableManager;
+	
+	/**
+	 * An {@link ExpressionParser ExpressionParser} used to interpret unit declarations in comments
+	 * with a syntax common to all programming language.
+	 */
 	private ExpressionParser mUnitDeclarationsParser;
 	
+	/**
+	 * Constructor. Initializes units dictionary and the unit declarations parser.
+	 */
 	protected Interpreter() {
 		Globals.initUnits();
 		mVariableManager = new VariableManager();
@@ -46,9 +64,25 @@ public abstract class Interpreter {
 		});
 	}
 	
+	/**
+	 * The core method of the interpreter. Called by the main program loop to interpret one or more lines (depending on whether the
+	 * statement is a one-line statement or extended to several lines, as decided by the concrete method itself).
+	 * 
+	 * @param linenumber the index in <pre>lines</pre> of the line to be interpreted.
+	 * @param lines all lines of the current file.
+	 * @return the next line index in <pre>lines</pre> to be read.
+	 * @throws InterpretationError
+	 */
 	public abstract int interpretStatements(int linenumber, List<String> lines) throws InterpretationError;
 	
-	
+	/**
+	 * Gathers and interprets all <pre>U(...)</pre> unit declarations in a comment.
+	 * 
+	 * @param string the comment to be interpreted
+	 * @return a list of all physical units defined in the <pre>U(...)</pre> unit declarations, in the order of appearance in the comment.
+	 * @throws UnbalancedBracesError
+	 * @throws ExponentNotScalarError
+	 */
 	public List<PhysicalUnit> parseUnitDeclarationsFromComment(String string) throws UnbalancedBracesError, ExponentNotScalarError {
 		List<PhysicalUnit> retval = new ArrayList<PhysicalUnit>();
 		
@@ -64,6 +98,14 @@ public abstract class Interpreter {
 		return retval;
 	}
 	
+	/**
+	 * Private method to parse a single <pre>U(...)</pre> content
+	 * 
+	 * @param string the <pre>U(...)</pre> content
+	 * @return the corresponding physical unit
+	 * @throws UnbalancedBracesError
+	 * @throws ExponentNotScalarError
+	 */
 	private PhysicalUnit parseUnitDeclaration(String string) throws UnbalancedBracesError, ExponentNotScalarError {
 		List<StackElement> expr = mUnitDeclarationsParser.parseExpression(string);
 		

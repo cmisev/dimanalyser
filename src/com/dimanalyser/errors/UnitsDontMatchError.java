@@ -20,14 +20,16 @@ package com.dimanalyser.errors;
 import com.dimanalyser.interpreter.StackElement;
 import com.dimanalyser.variablemanager.PhysicalUnit;
 
+/**
+ * Error thrown if the units don't match.
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class UnitsDontMatchError extends InterpretationError {
 
 
 
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -8451744034443520259L;
 
 

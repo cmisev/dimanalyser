@@ -17,13 +17,15 @@
 
 package com.dimanalyser.errors;
 
-
+/**
+ * Error thrown if, while attempting to implicitly set the unit of an {@link com.dimanalyser.variablemanager.Instance Instance}
+ * the unit was already set previously. 
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class UnitAlreadySetError extends InterpretationError {
 	
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8865873067121639178L;
 
 	public UnitAlreadySetError(String name) {

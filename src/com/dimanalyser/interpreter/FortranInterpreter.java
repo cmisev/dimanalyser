@@ -26,6 +26,7 @@ import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.ExponentNotScalarError;
 import com.dimanalyser.errors.InstanceExistsError;
 import com.dimanalyser.errors.InstanceNotFoundError;
+import com.dimanalyser.errors.InterpretationError;
 import com.dimanalyser.errors.NotInAnyScopeError;
 import com.dimanalyser.errors.ScopeExistsError;
 import com.dimanalyser.errors.UnbalancedBracesError;
@@ -40,9 +41,22 @@ import com.dimanalyser.variablemanager.VariableInstance;
 
 public class FortranInterpreter extends Interpreter {
 
+	/**
+	 * The expression parser parsing expressions in Fortran-specific syntax.
+	 */
 	private ExpressionParser mFortranParser;
-	FunctionInstance mCurrentFunctionInstance;
 	
+	/**
+	 * Subroutines and function may be defined on several instruction lines. 
+	 * The function instance is kept in this temporary field until the 
+	 * subroutine/function parameters/return types are completely defined
+	 */
+	// TODO better way of doing it?
+	private FunctionInstance mCurrentFunctionInstance;
+	
+	/**
+	 * Constructor. Initialize the Fortran expression parser.
+	 */
 	public FortranInterpreter() {
 		super();
 		
@@ -79,6 +93,15 @@ public class FortranInterpreter extends Interpreter {
 		
 	}
 
+	/**
+	 * The core method of the interpreter. Called by the main program loop to interpret one or more lines (depending on whether the
+	 * statement is a one-line statement or extended to several lines, as decided by the concrete method itself).
+	 * 
+	 * @param linenumber the index in <pre>lines</pre> of the line to be interpreted.
+	 * @param lines all lines of the current file.
+	 * @return the next line index in <pre>lines</pre> to be read.
+	 * @throws InterpretationError
+	 */
 	@Override
 	public int interpretStatements(int linenumber, List<String> lines) 
 			throws UnbalancedBracesError, ScopeExistsError, UnitDeclarationsDontMatchError, 
@@ -131,15 +154,15 @@ public class FortranInterpreter extends Interpreter {
 			
 			if (units.size()==variableList.size()) {
 				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(mCurrentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(i));
+					declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(i));
 				}
 			} else if (units.size()==1) {
 				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(mCurrentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(0));
+					declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(0));
 				}
 			} else if (units.size()==0) {
 				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(mCurrentFunctionInstance,variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,null);
+					declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,null);
 				}
 			} else {
 				throw new UnitDeclarationsDontMatchError();
@@ -159,21 +182,44 @@ public class FortranInterpreter extends Interpreter {
 		return linenumber+linesinterpreted;
 	}
 	
-	
-	private void declareInstance(FunctionInstance currentFunctionInstance,
-			String name, int accessLevel, PhysicalUnit unit) throws InstanceExistsError, UnitAlreadySetError, InstanceNotFoundError {
-		if (currentFunctionInstance!=null && currentFunctionInstance.hasParameter(name)) {
-			currentFunctionInstance.getParameter(name).setUnit(unit);
+	/**
+	 * Helper method. Declare the unit of a certain instance. Distinguish between a parameter of the
+	 * subroutine/function currently beeing defined and a local variable.
+	 * 
+	 * @param name name of instance to be declared
+	 * @param accessLevel access level of instance to be declared
+	 * @param unit unit of instance to be declared
+	 * @throws InstanceExistsError
+	 * @throws UnitAlreadySetError
+	 * @throws InstanceNotFoundError
+	 */
+	private void declareInstance(String name, int accessLevel, PhysicalUnit unit) 
+			throws InstanceExistsError, UnitAlreadySetError, InstanceNotFoundError {
+		if (mCurrentFunctionInstance!=null && mCurrentFunctionInstance.hasParameter(name)) {
+			mCurrentFunctionInstance.getParameter(name).setUnit(unit);
 		}
 		
-		if (currentFunctionInstance!=null && currentFunctionInstance.getName().equals(name)) {
-			currentFunctionInstance.setUnit(unit);
+		if (mCurrentFunctionInstance!=null && mCurrentFunctionInstance.getName().equals(name)) {
+			mCurrentFunctionInstance.setUnit(unit);
 		} else {
 			mVariableManager.addInstance(new VariableInstance(name, accessLevel, unit));
 		}
 	}
 
+	/**
+	 * Parse an expression and check if the units match. If possible, implicitly set the units of an instance that was
+	 * not yet declared.
+	 * 
+	 * @param expression the expression to check
+	 * @throws UnbalancedBracesError
+	 * @throws ExponentNotScalarError
+	 * @throws InstanceNotFoundError
+	 * @throws UnitsDontMatchError
+	 * @throws UnitAlreadySetError
+	 * @throws InstanceExistsError
+	 */
 	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError {
+		// TODO maybe move to ExpressionParser, handle operations with interfaces?
 		List<StackElement> expr = mFortranParser.parseExpression(expression);
 		Stack<StackElement> stack = new Stack<StackElement>();
 		

@@ -27,12 +27,33 @@ import com.dimanalyser.errors.NotInAnyScopeError;
 import com.dimanalyser.errors.ScopeExistsError;
 import com.dimanalyser.errors.ScopeNotFoundError;
 
+/**
+ * Manage a repository of known instances and scopes.
+ * 
+ * @author Cyril Misev <c.misev@gmail.com>
+ *
+ */
 public class VariableManager {
 	    
+		/**
+		 * A list of all available scopes
+		 */
 		private HashMap<String,Scope> mScopes;
+		
+		/**
+		 * A stack used for a sequential walk-through of the file, keeps track of the lower level scopes the currently interpreted
+		 * scope is embedded in.
+		 */
 		private Stack<Scope> mScopeWalk;
+		
+		/**
+		 * The currently interpreted scope.
+		 */
 		private Scope mCurrentScope;
 	
+		/**
+		 * Constructor. Initialize the internal repository of scopes.
+		 */
 		public VariableManager() {
 	    	mScopes = new HashMap<String, Scope>();
 	    	mScopeWalk = new Stack<Scope>();
@@ -40,6 +61,13 @@ public class VariableManager {
 			mScopes.put("__GLOBAL__",mCurrentScope);
 	    }
 		
+		/**
+		 * Function called when entering the definition body of a new scope.
+		 * 
+		 * @param name name given to identify the scope
+		 * @param inheritanceLevel inheritance level of the scope (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+		 * @throws ScopeExistsError
+		 */
 		public void enterScope(String name,int inheritanceLevel) throws ScopeExistsError {
 			Globals.debug(String.format("Entering scope %s", name),mScopeWalk.size());
 			
@@ -54,6 +82,13 @@ public class VariableManager {
 			}
 		}
 		
+		/**
+		 * Include a known scope to the current scope as an inheritance.
+		 * 
+		 * @param name the name of the scope to include
+		 * @param inheritanceLevel inheritance level of the scope (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+		 * @throws ScopeNotFoundError
+		 */
 		public void includeScope(String name, int inheritanceLevel) throws ScopeNotFoundError {
 			if (mScopes.containsKey(name)) {
 				mCurrentScope.addInheritance(new Inheritance(mScopes.get(name),inheritanceLevel));
@@ -62,6 +97,10 @@ public class VariableManager {
 			}
 		}
 		
+		/**
+		 * Leave the definition body of the current scope
+		 * @throws NotInAnyScopeError
+		 */
 		public void leaveScope() throws NotInAnyScopeError {
 			try {
 				Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()),mScopeWalk.size()-1);
@@ -71,12 +110,24 @@ public class VariableManager {
 			}
 		}
 		
+		/**
+		 * Add an instance to the currently interpreted scope
+		 * 
+		 * @param instance the instance to add to the scope
+		 * @throws InstanceExistsError
+		 */
 		public void addInstance(Instance instance) throws InstanceExistsError {
 			Globals.debug(String.format("Adding %s", instance.toString()),mScopeWalk.size());
 			mCurrentScope.addInstance(instance);
 		}
 		
-		
+		/**
+		 * Get an instance by its name as accessible and/or present in the scope.
+		 * 
+		 * @param name the name of the instance
+		 * @return the instance
+		 * @throws InstanceNotFoundError
+		 */
 		public Instance getInstance(String name) throws InstanceNotFoundError {
 			return mCurrentScope.getInstance(name);
 		}
