@@ -154,8 +154,19 @@ public class FortranInterpreter extends Interpreter {
 	private void interpredInstructions(String instructions, int linenumber) 
 			throws ScopeExistsError, UnbalancedBracesError, InstanceNotFoundError, ExponentNotScalarError, 
 				InstanceExistsError, UnitAlreadySetError, UnitDeclarationsDontMatchError, UnitsDontMatchError, NotInAnyScopeError {
-			
+		
 		instructions = instructions.trim();
+		
+		// TODO Interpretation of FUNCTION keyword
+		// TODO Interpretation of TYPE keyword
+		// TODO Interpretation of WRITE keyword
+		// TODO Interpretation of READ keyword
+		// TODO Interpretation of USE keyword
+		// TODO Interpretation of MODULE keyword
+		// TODO Interpretation of PRIVATE, PUBLIC keyword
+		// TODO Interpretation of IMPLICIT keyword
+		// TODO Interpretation of INTRINSIC keyword and implementation of intrinsic functions
+		// TODO Interpretation of INTERFACE keyword and implementation of external library functions
 		
 		
 		if (instructions.startsWith("PROGRAM ")) {

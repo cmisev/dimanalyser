@@ -90,6 +90,7 @@ public class VariableManager {
 		 * @throws ScopeNotFoundError
 		 */
 		public void includeScope(String name, int inheritanceLevel) throws ScopeNotFoundError {
+			// TODO load external scopes
 			if (mScopes.containsKey(name)) {
 				mCurrentScope.addInheritance(new Inheritance(mScopes.get(name),inheritanceLevel));
 			} else {
@@ -102,6 +103,7 @@ public class VariableManager {
 		 * @throws NotInAnyScopeError
 		 */
 		public void leaveScope() throws NotInAnyScopeError {
+			// TODO store scope to file
 			try {
 				Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()),mScopeWalk.size()-1);
 				mCurrentScope = mScopeWalk.pop();
