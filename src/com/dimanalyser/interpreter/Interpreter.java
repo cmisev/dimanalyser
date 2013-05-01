@@ -25,6 +25,7 @@ import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.ExponentNotScalarError;
 import com.dimanalyser.errors.InterpretationError;
 import com.dimanalyser.errors.UnbalancedBracesError;
+import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
 import com.dimanalyser.variablemanager.PhysicalUnit;
 import com.dimanalyser.variablemanager.VariableManager;
 
@@ -47,6 +48,17 @@ public abstract class Interpreter {
 	 * with a syntax common to all programming language.
 	 */
 	private ExpressionParser mUnitDeclarationsParser;
+	
+	/**
+	 * Buffer to store the unit declarations on the current line
+	 */
+	private List<PhysicalUnit> mUnitsBuffer;
+	
+	/**
+	 * Current position in unit buffer
+	 */
+	private int mUnitIndex;
+	
 	
 	/**
 	 * Constructor. Initializes units dictionary and the unit declarations parser.
@@ -79,23 +91,57 @@ public abstract class Interpreter {
 	 * Gathers and interprets all <pre>U(...)</pre> unit declarations in a comment.
 	 * 
 	 * @param string the comment to be interpreted
-	 * @return a list of all physical units defined in the <pre>U(...)</pre> unit declarations, in the order of appearance in the comment.
 	 * @throws UnbalancedBracesError
 	 * @throws ExponentNotScalarError
 	 */
-	public List<PhysicalUnit> parseUnitDeclarationsFromComment(String string) throws UnbalancedBracesError, ExponentNotScalarError {
-		List<PhysicalUnit> retval = new ArrayList<PhysicalUnit>();
+	protected void parseUnitDeclarationsFromComment(String string) throws UnbalancedBracesError, ExponentNotScalarError {
+		mUnitsBuffer = new ArrayList<PhysicalUnit>();
 		
 		int start = 0;
 		int end = 0;
 		
 		while((start=mUnitDeclarationsParser.getInterpretedIndex(string, "U(", end))<string.length()) {
 			end = mUnitDeclarationsParser.getInterpretedIndex(string, ")",start+2);
-			retval.add(parseUnitDeclaration(string.substring(start+2,end).replace(" ","")));
+			mUnitsBuffer.add(parseUnitDeclaration(string.substring(start+2,end).replace(" ","")));
 			end = end + 1;
 		}
-		
-		return retval;
+		mUnitIndex = 0;
+	}
+	
+	/**
+	 * Gets the next unit declaration from the unit declarations buffer
+	 * 
+	 * @return the next unit declaration
+	 * @throws UnitDeclarationsDontMatchError 
+	 */
+	protected PhysicalUnit getUnitFromBuffer() throws UnitDeclarationsDontMatchError {
+		switch (mUnitsBuffer.size()) {
+		case 0:
+			return null;
+		case 1:
+			return mUnitsBuffer.get(0);
+		default:
+			try {
+				return mUnitsBuffer.get(mUnitIndex++);
+			} catch (Exception e) {
+				
+				throw new UnitDeclarationsDontMatchError();
+			}
+		}
+	}
+	
+	/**
+	 * Like {@link Interpreter#getUnitFromBuffer() getUnitFromBuffer()}, additionally checks if the number of expected units match
+	 * 
+	 * @return the next unit declaration
+	 * @throws UnitDeclarationsDontMatchError 
+	 */
+	protected PhysicalUnit getUnitFromBuffer(int size) throws UnitDeclarationsDontMatchError {
+		if (mUnitsBuffer.size()==0 || mUnitsBuffer.size()==1 || mUnitsBuffer.size()==size) {
+			return getUnitFromBuffer();
+		} else {
+			throw new UnitDeclarationsDontMatchError();
+		}
 	}
 	
 	/**

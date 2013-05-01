@@ -54,6 +54,8 @@ public class FortranInterpreter extends Interpreter {
 	// TODO better way of doing it?
 	private FunctionInstance mCurrentFunctionInstance;
 	
+	
+	
 	/**
 	 * Constructor. Initialize the Fortran expression parser.
 	 */
@@ -73,13 +75,13 @@ public class FortranInterpreter extends Interpreter {
 				","
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
-				".and.",".or."
+				".AND.",".OR."
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
-				".eq.",".ne."
+				".EQ.",".NE."
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
-				".lt.",".gt.",".ge.",".le."
+				".LT.",".GT.",".GE.",".LE."
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"+","-"
@@ -127,6 +129,33 @@ public class FortranInterpreter extends Interpreter {
 			linesinterpreted++;
 		}
 		
+		instructions = instructions.toUpperCase();
+		parseUnitDeclarationsFromComment(comment);
+		
+		interpredInstructions(instructions,linenumber);
+		
+		return linenumber+linesinterpreted;
+	}
+	
+	/**
+	 * Recursive helper function to interpret instructions embedded to each other, i.e. <pre>IF (...) CALL ...</pre>
+	 * 
+	 * @param instructions the instructions to interpret
+	 * @throws ScopeExistsError 
+	 * @throws UnbalancedBracesError 
+	 * @throws InstanceNotFoundError 
+	 * @throws ExponentNotScalarError 
+	 * @throws UnitAlreadySetError 
+	 * @throws InstanceExistsError 
+	 * @throws UnitDeclarationsDontMatchError 
+	 * @throws UnitsDontMatchError 
+	 * @throws NotInAnyScopeError 
+	 */
+	private void interpredInstructions(String instructions, int linenumber) 
+			throws ScopeExistsError, UnbalancedBracesError, InstanceNotFoundError, ExponentNotScalarError, 
+				InstanceExistsError, UnitAlreadySetError, UnitDeclarationsDontMatchError, UnitsDontMatchError, NotInAnyScopeError {
+			
+		instructions = instructions.trim();
 		
 		
 		if (instructions.startsWith("PROGRAM ")) {
@@ -150,41 +179,63 @@ public class FortranInterpreter extends Interpreter {
 					mFortranParser.getVariableList(
 							instructions.substring(mFortranParser.getInterpretedIndex(instructions, "::")+2),true);
 			
-			List<PhysicalUnit> units = parseUnitDeclarationsFromComment(comment);
 			
-			if (units.size()==variableList.size()) {
-				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(i));
-				}
-			} else if (units.size()==1) {
-				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,units.get(0));
-				}
-			} else if (units.size()==0) {
-				for (int i=0; i<variableList.size(); i++) {
-					declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,null);
-				}
-			} else {
-				throw new UnitDeclarationsDontMatchError();
+			for (int i=0; i<variableList.size(); i++) {
+				declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,getUnitFromBuffer(variableList.size()));
 			}
 		} else if (instructions.startsWith("CALL ")) {
 			checkUnits(instructions.substring(5));
-		} else if (instructions.startsWith("END PROGRAM") || instructions.startsWith("END SUBROUTINE")) {
+		} else if (instructions.startsWith("DO ")) {
+			mVariableManager.enterScope(String.format("DO_%s:%d",Globals.fileName,linenumber), InheritanceLevel.SCOPE_PUBLIC);
+			if (instructions.startsWith("DO WHILE ") || instructions.startsWith("DO WHILE(")) {
+				interpredInstructions(instructions.substring(8),linenumber);
+			} else {
+				interpredInstructions(instructions.substring(3),linenumber);
+			}
+		} else if (instructions.startsWith("IF(") || instructions.startsWith("IF ")) {
+			if (instructions.endsWith("THEN")) {
+				mVariableManager.enterScope(String.format("IF_%s:%d",Globals.fileName,linenumber), InheritanceLevel.SCOPE_PUBLIC);
+				checkUnits(instructions.substring(2,instructions.length()-4));
+			} else {
+				int start = mFortranParser.getInterpretedIndex(instructions, "(");
+				int end = mFortranParser.getInterpretedIndex(instructions, ")",start+1);
+				checkUnits(instructions.substring(start+1,end));
+				interpredInstructions(instructions.substring(end+1), linenumber);
+			}
+		} else if (instructions.startsWith("ELSE")) {
+			mVariableManager.leaveScope();
+			if (instructions.equals("ELSE")) {
+				mVariableManager.enterScope(String.format("ELSE_%s:%d",Globals.fileName,linenumber), InheritanceLevel.SCOPE_PUBLIC);
+			} else {
+				interpredInstructions(instructions.substring(5), linenumber);
+			}
+		} else if (instructions.equals("STOP") || instructions.startsWith("STOP ") || instructions.startsWith("STOP(") || instructions.equals("ELSE") || instructions.startsWith("GOTO ")) {
+		} else if (instructions.equals("END") || instructions.startsWith("END ") || instructions.equals("CONTINUE")) {
 			mVariableManager.leaveScope();
 			mCurrentFunctionInstance = null;
 		} else if (instructions.startsWith("CONTAINS")) {
 			mCurrentFunctionInstance = null;
-		} else if (!instructions.trim().equals("")) {
-			checkUnits(instructions);
+		} else if (!instructions.equals("")) {
+			if ("0123456789".contains(instructions.substring(0,1))) {
+				// TODO Better way of doing it
+				int k=1;
+				while(k<instructions.length() && "0123456789:".contains(instructions.substring(k,k+1))) {
+					k++;
+				}
+				if (k<instructions.length()) {
+					interpredInstructions(instructions.substring(k), linenumber);
+				}
+			} else {
+				checkUnits(instructions);
+			}
 		}
-		
-		
-		return linenumber+linesinterpreted;
 	}
 	
+
+
 	/**
 	 * Helper method. Declare the unit of a certain instance. Distinguish between a parameter of the
-	 * subroutine/function currently beeing defined and a local variable.
+	 * subroutine/function currently being defined and a local variable.
 	 * 
 	 * @param name name of instance to be declared
 	 * @param accessLevel access level of instance to be declared
@@ -217,10 +268,11 @@ public class FortranInterpreter extends Interpreter {
 	 * @throws UnitsDontMatchError
 	 * @throws UnitAlreadySetError
 	 * @throws InstanceExistsError
+	 * @throws UnitDeclarationsDontMatchError 
 	 */
-	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError {
+	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError, UnitDeclarationsDontMatchError {
 		// TODO maybe move to ExpressionParser, handle operations with interfaces?
-		List<StackElement> expr = mFortranParser.parseExpression(expression);
+		List<StackElement> expr = mFortranParser.parseExpression(expression.trim());
 		Stack<StackElement> stack = new Stack<StackElement>();
 		
 		for(int k =0; k<expr.size(); k++) {
@@ -238,9 +290,30 @@ public class FortranInterpreter extends Interpreter {
 				StackElement lhs = stack.pop();
 				stack.push(new StackElement(String.format("%s**%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.power(lhs.getUnit(), rhs.getUnit())));
 			} else if (s.equals("+") || s.equals("-") || 
-					s.equals(".le.") || s.equals(".lt.") || 
-					s.equals(".gt.") || s.equals(".ge.") || 
-					s.equals(".eq.") || s.equals("=")) {
+					s.equals(".LE.") || s.equals(".LT.") || 
+					s.equals(".GT.") || s.equals(".GE.") || 
+					s.equals(".EQ.") || s.equals("=")) {
+				
+				if (stack.lastElement().equals(",")) {
+					int elementcount = stack.pop().getOperandsCount();
+					StackElement reference = stack.pop();
+					String listexpression = reference.getExpression();
+					for (int j=1; j<elementcount; j++) {
+						StackElement current = stack.pop();
+						if (reference.getUnit() == null && current.getUnit() !=null) {
+							reference.setUnit(current.getUnit());
+							mVariableManager.getInstance(reference.getExpression().trim()).setUnit(current.getUnit());
+						} else if (reference.getUnit() != null && current.getUnit() ==null) {
+							current.setUnit(reference.getUnit());
+							mVariableManager.getInstance(current.getExpression().trim()).setUnit(reference.getUnit());
+						} else if (reference.getUnit() != null && current.getUnit()!=null && !reference.getUnit().equals(current.getUnit())) {
+							throw new UnitsDontMatchError(reference, current, elementcount-j);
+						} 
+						listexpression = current.getExpression() + "," + listexpression;
+					}
+					stack.push(new StackElement(listexpression,reference.getUnit()));
+				}
+				
 				StackElement rhs = stack.pop();
 				StackElement lhs = stack.pop();
 				
@@ -266,9 +339,13 @@ public class FortranInterpreter extends Interpreter {
 				try {
 					double f = Float.parseFloat(s.getExpression());
 					s.setUnit(PhysicalUnit.getUnitless(f));
-				} catch (NumberFormatException nfe) {
 					
-
+					PhysicalUnit declaredUnit = getUnitFromBuffer();
+					if (declaredUnit!=null) {
+						s.setUnit(PhysicalUnit.product(s.getUnit(), declaredUnit));
+					}
+					
+				} catch (NumberFormatException nfe) {
 					
 					if (stack.size()>0 && stack.lastElement().getExpression().charAt(0)=='(') {
 						int parameterCount = 1;

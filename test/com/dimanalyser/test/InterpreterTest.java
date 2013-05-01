@@ -73,27 +73,6 @@ public class InterpreterTest {
 	}
 	
 	@Test
-	public void testParseUnitDeclarationsFromComment() {
-		try {
-
-			Interpreter ip = InterpreterFactory.getInterpreter("fortran");
-			List<PhysicalUnit> actualList = ip.parseUnitDeclarationsFromComment("U((kg*m)/(s^2))  () U(N*m)");
-			
-			assertEquals(2,actualList.size());
-			assertTrue(Globals.units.get("N").equals(actualList.get(0)));
-			assertTrue(Globals.units.get("J").equals(actualList.get(1)));
-			
-		} catch (UnbalancedBracesError e) {
-			fail("UnbalancedBracesError raised while it shouldn't");
-		} catch (ExponentNotScalarError e) {
-			fail("ExponentNotScalarError raised while it shouldn't");
-		} catch (LanguageNotSupportedError e) {
-			fail("LanguageNotSupportedError raised while it shouldn't");
-		}
-		
-	}
-	
-	@Test
 	public void testFortranInterpreter() {
 		List<String> lines = new ArrayList<String>();
 		File file = new File("testfortran.f90");

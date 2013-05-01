@@ -42,4 +42,10 @@ public class UnitsDontMatchError extends InterpretationError {
 	public UnitsDontMatchError(int i, StackElement par, PhysicalUnit expected, StackElement s) {
 		super(String.format("Parameter Units of parameter %d don't match in function call %s. [%s]=%s should be %s ",i,s.getExpression(),par.getExpression(),par.getUnit().toString(),expected.toString()));
 	}
+
+
+	public UnitsDontMatchError(StackElement reference, StackElement current,
+			int i) {
+		super(String.format("Unit of list member %d doesn't match with reference list member (last member). [%s]=%s should be %s ",i,current.getExpression(),current.getUnit().toString(),reference.getUnit()));
+	}
 }

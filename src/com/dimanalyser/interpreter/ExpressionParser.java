@@ -204,7 +204,6 @@ public class ExpressionParser {
 	 * @throws UnbalancedBracesError
 	 */
 	public List<StackElement> parseExpression(String expression) throws UnbalancedBracesError {
-		
 		List<StackElement> stack = new ArrayList<StackElement>(); 
 		List<String> atoms = splitExpression(expression);
 		parseAtomsRecursive(stack,atoms,0,atoms.size()-1,0);
