@@ -157,18 +157,115 @@ public class FortranInterpreter extends Interpreter {
 		
 		instructions = instructions.trim();
 		
-		// TODO Interpretation of FUNCTION keyword
-		// TODO Interpretation of TYPE keyword
-		// TODO Interpretation of WRITE keyword
-		// TODO Interpretation of READ keyword
-		// TODO Interpretation of USE keyword
-		// TODO Interpretation of MODULE keyword
-		// TODO Interpretation of PRIVATE, PUBLIC keyword
-		// TODO Interpretation of IMPLICIT keyword
-		// TODO Interpretation of INTRINSIC keyword and implementation of intrinsic functions
-		// TODO Interpretation of INTERFACE keyword and implementation of external library functions
+		// Fortran keyword, see http://fortranwiki.org/fortran/show/Keywords
+		// TODO Fortran 77: Interpretation and testing of assign keyword
+		// TODO Fortran 77: Interpretation and testing of backspace keyword
+		// TODO Fortran 77: Interpretation and testing of block data keyword
+		// TODO Fortran 77: Interpretation and testing of call keyword
+		// TODO Fortran 77: Interpretation and testing of close keyword
+		// TODO Fortran 77: Interpretation and testing of common keyword
+		// TODO Fortran 77: Interpretation and testing of continue keyword
+		// TODO Fortran 77: Interpretation and testing of data keyword
+		// TODO Fortran 77: Interpretation and testing of dimension keyword
+		// TODO Fortran 77: Interpretation and testing of do keyword
+		// TODO Fortran 77: Interpretation and testing of else keyword
+		// TODO Fortran 77: Interpretation and testing of else if keyword
+		// TODO Fortran 77: Interpretation and testing of end keyword
+		// TODO Fortran 77: Interpretation and testing of endfile keyword
+		// TODO Fortran 77: Interpretation and testing of endif keyword
+		// TODO Fortran 77: Interpretation and testing of entry keyword
+		// TODO Fortran 77: Interpretation and testing of equivalence keyword
+		// TODO Fortran 77: Interpretation and testing of external keyword
+		// TODO Fortran 77: Interpretation and testing of format keyword
+		// TODO Fortran 77: Interpretation and testing of function keyword
+		// TODO Fortran 77: Interpretation and testing of goto keyword
+		// TODO Fortran 77: Interpretation and testing of if keyword
+		// TODO Fortran 77: Interpretation and testing of implicit keyword
+		// TODO Fortran 77: Interpretation and testing of inquire keyword
+		// TODO Fortran 77: Interpretation and testing of intrinsic keyword
+		// TODO Fortran 77: Interpretation and testing of open keyword
+		// TODO Fortran 77: Interpretation and testing of parameter keyword
+		// TODO Fortran 77: Interpretation and testing of pause keyword
+		// TODO Fortran 77: Interpretation and testing of print keyword
+		// TODO Fortran 77: Interpretation and testing of program keyword
+		// TODO Fortran 77: Interpretation and testing of read keyword
+		// TODO Fortran 77: Interpretation and testing of return keyword
+		// TODO Fortran 77: Interpretation and testing of rewind keyword
+		// TODO Fortran 77: Interpretation and testing of rewrite keyword
+		// TODO Fortran 77: Interpretation and testing of save keyword
+		// TODO Fortran 77: Interpretation and testing of stop keyword
+		// TODO Fortran 77: Interpretation and testing of subroutine keyword
+		// TODO Fortran 77: Interpretation and testing of then keyword
+		// TODO Fortran 77: Interpretation and testing of write keyword
 		
+		// TODO Fortran 90: Interpretation and testing of allocate keyword
+		// TODO Fortran 90: Interpretation and testing of allocatable keyword
+		// TODO Fortran 90: Interpretation and testing of case keyword
+		// TODO Fortran 90: Interpretation and testing of contains keyword
+		// TODO Fortran 90: Interpretation and testing of cycle keyword
+		// TODO Fortran 90: Interpretation and testing of deallocate keyword
+		// TODO Fortran 90: Interpretation and testing of elsewhere keyword
+		// TODO Fortran 90: Interpretation and testing of exit keyword
+		// TODO Fortran 90: Interpretation and testing of include keyword
+		// TODO Fortran 90: Interpretation and testing of interface keyword
+		// TODO Fortran 90: Interpretation and testing of intent keyword
+		// TODO Fortran 90: Interpretation and testing of module keyword
+		// TODO Fortran 90: Interpretation and testing of namelist keyword
+		// TODO Fortran 90: Interpretation and testing of nullify keyword
+		// TODO Fortran 90: Interpretation and testing of only keyword
+		// TODO Fortran 90: Interpretation and testing of operator keyword
+		// TODO Fortran 90: Interpretation and testing of optional keyword
+		// TODO Fortran 90: Interpretation and testing of pointer keyword
+		// TODO Fortran 90: Interpretation and testing of private keyword
+		// TODO Fortran 90: Interpretation and testing of procedure keyword
+		// TODO Fortran 90: Interpretation and testing of public keyword
+		// TODO Fortran 90: Interpretation and testing of result keyword
+		// TODO Fortran 90: Interpretation and testing of recursive keyword
+		// TODO Fortran 90: Interpretation and testing of select keyword
+		// TODO Fortran 90: Interpretation and testing of sequence keyword
+		// TODO Fortran 90: Interpretation and testing of target keyword
+		// TODO Fortran 90: Interpretation and testing of use keyword
+		// TODO Fortran 90: Interpretation and testing of while keyword
+		// TODO Fortran 90: Interpretation and testing of where keyword
+
+		// TODO Fortran 95: Interpretation and testing of elemental keyword
+		// TODO Fortran 95: Interpretation and testing of forall keyword
+		// TODO Fortran 95: Interpretation and testing of pure keyword 
 		
+		// TODO Fortran 2003: Interpretation and testing abstract keyword
+		// TODO Fortran 2003: Interpretation and testing of associate keyword
+		// TODO Fortran 2003: Interpretation and testing of asynchronous keyword
+		// TODO Fortran 2003: Interpretation and testing of bind keyword
+		// TODO Fortran 2003: Interpretation and testing of class keyword
+		// TODO Fortran 2003: Interpretation and testing of deferred keyword
+		// TODO Fortran 2003: Interpretation and testing of enum keyword
+		// TODO Fortran 2003: Interpretation and testing of enumerator keyword
+		// TODO Fortran 2003: Interpretation and testing of extends keyword
+		// TODO Fortran 2003: Interpretation and testing of final keyword
+		// TODO Fortran 2003: Interpretation and testing of flush keyword
+		// TODO Fortran 2003: Interpretation and testing of generic keyword
+		// TODO Fortran 2003: Interpretation and testing of import keyword
+		// TODO Fortran 2003: Interpretation and testing of non_overridable keyword
+		// TODO Fortran 2003: Interpretation and testing of nopass keyword
+		// TODO Fortran 2003: Interpretation and testing of pass keyword
+		// TODO Fortran 2003: Interpretation and testing of protected keyword
+		// TODO Fortran 2003: Interpretation and testing of value keyword
+		// TODO Fortran 2003: Interpretation and testing of volatile keyword
+		// TODO Fortran 2003: Interpretation and testing of wait keyword
+		
+		// TODO Fortran 2008: Interpretation and testing of block keyword
+		// TODO Fortran 2008: Interpretation and testing of codimension keyword
+		// TODO Fortran 2008: Interpretation and testing of do concurrent keyword
+		// TODO Fortran 2008: Interpretation and testing of contiguous keyword
+		// TODO Fortran 2008: Interpretation and testing of critical keyword
+		// TODO Fortran 2008: Interpretation and testing of error stop keyword
+		// TODO Fortran 2008: Interpretation and testing of submodule keyword
+		// TODO Fortran 2008: Interpretation and testing of sync all keyword
+		// TODO Fortran 2008: Interpretation and testing of sync images keyword
+		// TODO Fortran 2008: Interpretation and testing of sync memory keyword
+		// TODO Fortran 2008: Interpretation and testing of lock keyword
+		// TODO Fortran 2008: Interpretation and testing of unlock keyword
+				
 		if (instructions.startsWith("PROGRAM ")) {
 			mVariableManager.enterScope("PROGRAM", InheritanceLevel.SCOPE_PRIVATE);
 		} else if (instructions.startsWith("SUBROUTINE ")) {
