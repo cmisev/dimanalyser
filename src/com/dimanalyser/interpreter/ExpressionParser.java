@@ -145,7 +145,9 @@ public class ExpressionParser {
 	 * 
 	 * @param operator the operator to be added
 	 */
-	public void addUnaryOperator(String operator) {
+	public void addUnaryOperatorInHierarchy(String operator) {
+		mOperatorHierarchy.add(new ArrayList<String>());
+		mOperatorHierarchy.get(mOperatorHierarchy.size()-1).add(operator);
 		mAtomsList.add(operator);
 		mUnaryOperatorList.add(operator);
 	}
@@ -262,9 +264,9 @@ public class ExpressionParser {
 				}
 			}
 			
-			if (bracesStack.size()==0) {
-				if (operatorLevel < mOperatorHierarchy.size() && mOperatorHierarchy.get(operatorLevel).contains(atoms.get(k)) && 
-						mListSeparatorList.contains(atoms.get(k))) {
+			if (bracesStack.size()==0 && operatorLevel < mOperatorHierarchy.size()) {
+				if (mOperatorHierarchy.get(operatorLevel).contains(atoms.get(k)) && 
+					mListSeparatorList.contains(atoms.get(k))) {
 					parseAtomsRecursive(exp, atoms, start, k-1, operatorLevel);
 					StackElement lelm = exp.get(exp.size()-1);
 					if (lelm.getExpression().equals(atoms.get(k))) {
@@ -278,17 +280,15 @@ public class ExpressionParser {
 					return;
 				}
 				
-				if(operatorLevel < mOperatorHierarchy.size() && mOperatorHierarchy.get(operatorLevel).contains(atoms.get(k)) &&
-				   !(k>start && mUnaryOperatorList.contains(atoms.get(k)) && mBinaryOperatorList.contains(atoms.get(k-1))) || 
-				   (k==start && mUnaryOperatorList.contains(atoms.get(k))) && operatorLevel==mOperatorHierarchy.size() || 
-				   (k==end && mUnaryOperatorList.contains(atoms.get(k))) && operatorLevel==mOperatorHierarchy.size()) {
-						parseAtomsRecursive(exp,atoms,start,k-1,operatorLevel);
-						parseAtomsRecursive(exp,atoms,k+1,end,operatorLevel);
-						exp.add(new StackElement(atoms.get(k),2));
-						return;
+				if(mOperatorHierarchy.get(operatorLevel).contains(atoms.get(k)) &&
+					(!(k>start && mUnaryOperatorList.contains(atoms.get(k)) && mBinaryOperatorList.contains(atoms.get(k-1))) || 
+						(k==start && mUnaryOperatorList.contains(atoms.get(k))) || 
+						(k==end && mUnaryOperatorList.contains(atoms.get(k))))) {
+					parseAtomsRecursive(exp,atoms,start,k-1,operatorLevel);
+					parseAtomsRecursive(exp,atoms,k+1,end,operatorLevel);
+					exp.add(new StackElement(atoms.get(k),2));
+					return;
 				}
-				
-
 			}
 			k--;
 		}

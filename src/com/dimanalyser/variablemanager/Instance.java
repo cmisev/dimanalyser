@@ -37,7 +37,22 @@ abstract public class Instance {
 	/**
 	 * Access level of the object (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
 	 */
-	int mAccessLevel;
+	protected int mAccessLevel;
+	
+	/**
+	 * The line number where the unit of the instance was determined. 0 if not yet determined
+	 */
+	protected int mUnitDefinedAtLineNumber=0;
+	
+	/**
+	 * The file name where the unit of the instance was determined.
+	 */
+	protected String mUnitDefinedInFileName = "";
+	
+	/**
+	 * The instance which lead to the implicit definition of the unit of this instance, if applicable
+	 */
+	protected Instance mUnitDefinedByInstance = null;
 	
 	/**
 	 * Constructor, give the object the two main attributes that are common to all instances, a name and an access level.
@@ -74,7 +89,7 @@ abstract public class Instance {
 	 * @return the physical unit of the instance
 	 */
 	public PhysicalUnit getUnit() {
-		return Globals.UNIT_UNITLESS;
+		return Globals.getInstance().getUnitless();
 	}
 
 	/**
@@ -84,7 +99,30 @@ abstract public class Instance {
 	 * @throws UnitAlreadySetError
 	 */
 	public void setUnit(PhysicalUnit unit) throws UnitAlreadySetError {
-		throw new UnitAlreadySetError(mName);
+		throw new UnitAlreadySetError(this);
+	}
+
+	/**
+	 * Set the physical unit of the instance and keep track of the origin of the implicit unit definition.
+	 * 
+	 * @param unit the unit to be set.
+	 * @param instance the instance leading to the implicit unit definition, may be null
+	 * @throws UnitAlreadySetError
+	 */
+	public void setUnit(PhysicalUnit unit, Instance origin) throws UnitAlreadySetError {
+		setUnit(unit);
+		mUnitDefinedByInstance = origin;
+	}
+	
+	public String definitionOriginTree(int depth) {
+		if (depth>0) {
+			if (mUnitDefinedByInstance != null) {
+				return String.format("\n @ %s: %d by %s", mUnitDefinedInFileName, mUnitDefinedAtLineNumber, mUnitDefinedByInstance.definitionOriginTree(depth-1));
+			} else {
+				return String.format("\n @ %s: %d", mUnitDefinedInFileName, mUnitDefinedAtLineNumber);
+			}
+		}
+		return "";
 	}
 
 }

@@ -17,20 +17,27 @@
 
 package com.dimanalyser.errors;
 
-import com.dimanalyser.variablemanager.Instance;
+import com.dimanalyser.interpreter.StackElement;
 
 /**
- * Error thrown if, while attempting to implicitly set the unit of an {@link com.dimanalyser.variablemanager.Instance Instance}
- * the unit was already set previously. 
- * 
+ * Error thrown if the units can't be matched (i.e.) if attempting to set an unit of a mixed expression.
  * @author Cyril Misev <c.misev@gmail.com>
  *
  */
-public class UnitAlreadySetError extends InterpretationError {
-	
-	private static final long serialVersionUID = 8865873067121639178L;
+public class UnableToMatchUnitsError extends InterpretationError {
 
-	public UnitAlreadySetError(Instance instance) {
-		super(String.format("Unit on  instance \"%s\" was already set%s",instance.getName(),instance.definitionOriginTree(5)));
+
+
+
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6291268521918092983L;
+
+
+	public UnableToMatchUnitsError(StackElement lhs, StackElement rhs) {
+		super(String.format("Units of expressions %s and %s can't be matched",lhs.getExpression(),rhs.getExpression()));
 	}
+
 }

@@ -41,43 +41,26 @@ public class DimAnalyser {
 	
 	public static void main(String[] args) {
 		
-		List<String> lines = new ArrayList<String>();
-		File file = new File(Globals.fileName);
-		String line;
-		
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			while((line = reader.readLine())!=null) {
-				lines.add(line);
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		int linenumber = 0;
-		
+		Globals.getInstance().openFile("testfortran.f90");
+
 		try {
 			Interpreter interpreter;
 			interpreter = InterpreterFactory.getInterpreter("fortran");
 		
-			while(linenumber<lines.size()) {
+			while(!Globals.getInstance().fileRead()) {
 				try {
-					linenumber = interpreter.interpretStatements(linenumber, lines);
-				} catch (InterpretationError e) {
-					System.err.println(String.format("Error in %s at line %d: %s",Globals.fileName,linenumber+1,e.getMessage()));
-					linenumber++;
+					interpreter.interpretStatements();
+				} catch (Exception e) {
+					System.err.println(String.format("Error in %s at line %d: %s",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber(),e.getMessage()));
+					if (!(e instanceof InterpretationError)) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (LanguageNotSupportedError e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		
 	}
 

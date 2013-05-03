@@ -40,7 +40,6 @@ public class VariableManagerTest {
 	@Before
 	public void setUp() throws Exception {
 		vm = new VariableManager();
-		Globals.initUnits();
 	}
 
 	@After
@@ -86,7 +85,7 @@ public class VariableManagerTest {
 			vm.includeScope("FIELDS", InheritanceLevel.SCOPE_PUBLIC);
 			assertEquals("variable instance grad_B, unit not yet determined",vm.getInstance("grad_B").toString());
 
-			vm.addInstance(new VariableInstance("grad_B",InheritanceLevel.SCOPE_PUBLIC,Globals.units.get("N")));
+			vm.addInstance(new VariableInstance("grad_B",InheritanceLevel.SCOPE_PUBLIC,Globals.getInstance().getUnit("N")));
 			assertEquals("variable instance grad_B [m kg s^-2]",vm.getInstance("grad_B").toString());
 			
 
@@ -108,7 +107,7 @@ public class VariableManagerTest {
 			
 			errorThrown = false;
 			try {
-				vm.addInstance(new VariableInstance("grad_B",InheritanceLevel.SCOPE_PUBLIC,Globals.units.get("N")));
+				vm.addInstance(new VariableInstance("grad_B",InheritanceLevel.SCOPE_PUBLIC,Globals.getInstance().getUnit("N")));
 			} catch (InstanceExistsError e) {
 				errorThrown = true;
 			}

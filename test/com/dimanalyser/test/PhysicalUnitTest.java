@@ -31,7 +31,6 @@ public class PhysicalUnitTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Globals.initUnits();
 	}
 
 	@After
@@ -47,17 +46,17 @@ public class PhysicalUnitTest {
 	public void testOperators() {
 		
 		try {
-			assertTrue(Globals.units.get("J").equals(
+			assertTrue(Globals.getInstance().getUnit("J").equals(
 					PhysicalUnit.fraction(
 							PhysicalUnit.product(
-									Globals.units.get("kg"),
+									Globals.getInstance().getUnit("kg"),
 									PhysicalUnit.power(
-											Globals.units.get("m"),
-											PhysicalUnit.product(Globals.UNIT_UNITLESS, 2.0)
+											Globals.getInstance().getUnit("m"),
+											PhysicalUnit.product(Globals.getInstance().getUnitless(), 2.0)
 									)),
 							PhysicalUnit.power(
-									Globals.units.get("s"),
-									PhysicalUnit.product(Globals.UNIT_UNITLESS, 2.0)
+									Globals.getInstance().getUnit("s"),
+									PhysicalUnit.product(Globals.getInstance().getUnitless(), 2.0)
 							)
 					)));
 		} catch (ExponentNotScalarError e) {
@@ -67,8 +66,8 @@ public class PhysicalUnitTest {
 		boolean thrownError = false;
 		try {
 			PhysicalUnit.power(
-					Globals.UNIT_UNITLESS,
-					Globals.units.get("J"));
+					Globals.getInstance().getUnitless(),
+					Globals.getInstance().getUnit("J"));
 			
 		} catch (ExponentNotScalarError e) {
 			thrownError = true;
@@ -76,22 +75,22 @@ public class PhysicalUnitTest {
 		assertTrue(thrownError);
 		
 		
-		assertFalse(Globals.units.get("N").equals(Globals.UNIT_UNITLESS));
-		assertTrue(Globals.UNIT_UNITLESS.equals(PhysicalUnit.product(Globals.UNIT_UNITLESS, 1.24)));
+		assertFalse(Globals.getInstance().getUnit("N").equals(Globals.getInstance().getUnitless()));
+		assertTrue(Globals.getInstance().getUnitless().equals(PhysicalUnit.product(Globals.getInstance().getUnitless(), 1.24)));
 		
 	}
 
 
 	@Test
 	public void testToString() {
-		assertEquals("m",Globals.units.get("m").toString());
-		assertEquals("kg",Globals.units.get("kg").toString());
-		assertEquals("s",Globals.units.get("s").toString());
+		assertEquals("m",Globals.getInstance().getUnit("m").toString());
+		assertEquals("kg",Globals.getInstance().getUnit("kg").toString());
+		assertEquals("s",Globals.getInstance().getUnit("s").toString());
 		
-		assertEquals("m^2 kg s^-2",Globals.units.get("J").toString());
-		assertEquals("m kg s^-2",Globals.units.get("N").toString());
+		assertEquals("m^2 kg s^-2",Globals.getInstance().getUnit("J").toString());
+		assertEquals("m kg s^-2",Globals.getInstance().getUnit("N").toString());
 		try {
-			assertEquals("m^4 kg^2 s^-4",PhysicalUnit.power(Globals.units.get("J"),PhysicalUnit.product(Globals.UNIT_UNITLESS, 2.0)).toString());
+			assertEquals("m^4 kg^2 s^-4",PhysicalUnit.power(Globals.getInstance().getUnit("J"),PhysicalUnit.product(Globals.getInstance().getUnitless(), 2.0)).toString());
 		} catch (ExponentNotScalarError e) {
 			fail("Thrown ExponentNotScalarError while it shouldn't");
 		}

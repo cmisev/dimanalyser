@@ -17,6 +17,7 @@
 
 package com.dimanalyser.variablemanager;
 
+import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.UnitAlreadySetError;
 
 /**
@@ -42,7 +43,13 @@ public class VariableInstance extends Instance {
 	 */
 	public VariableInstance(String name, int accessLevel, PhysicalUnit unit) {
 		super(name, accessLevel);
-		mUnit = unit;
+		if (unit == null) {
+			mUnit = null;
+		} else {
+			mUnitDefinedAtLineNumber = Globals.getInstance().getLineNumber();
+			mUnitDefinedInFileName = Globals.getInstance().getCurrentFilename();
+			mUnit = unit;
+		}
 	}
 
 	/**
@@ -52,8 +59,7 @@ public class VariableInstance extends Instance {
 	 * @param accessLevel Access level of the instance (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
 	 */
 	public VariableInstance(String name, int accessLevel) {
-		super(name, accessLevel);
-		mUnit = null;
+		this(name, accessLevel, null);
 	}
 
 	/**
@@ -77,12 +83,16 @@ public class VariableInstance extends Instance {
 	public void setUnit(PhysicalUnit unit) throws UnitAlreadySetError {
 		if (mUnit==null) {
 			mUnit = unit;
-		} else {
+			if (unit!=null) {
+				Globals.debug(String.format("Unit of variable instance %s set to %s",mName,mUnit.toString()));
+			}
+		} else if (unit!=null) {
 			if (!mUnit.equals(unit)) {
-				throw new UnitAlreadySetError(mName);
+				throw new UnitAlreadySetError(this);
 			}
 		}
 	}
+
 	
 	/**
 	 * Get the physical unit of the instance.
@@ -92,6 +102,15 @@ public class VariableInstance extends Instance {
 	@Override
 	public PhysicalUnit getUnit() {
 		return mUnit;
+	}
+	
+	/**
+	 * Set the name of the variable instance.
+	 * 
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		mName = name;
 	}
 
 }

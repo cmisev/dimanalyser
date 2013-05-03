@@ -53,9 +53,9 @@ public class PhysicalUnit {
 	 * @param baseunits Array of base units exponents
 	 */
 	public PhysicalUnit(double value,double scaling,double[] baseunits) {
-		mBaseUnits = new double[Globals.NUM_BASEUNITS];
+		mBaseUnits = new double[Globals.getInstance().getBaseUnitsCount()];
 		
-		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+		for(int k=0; k<Globals.getInstance().getBaseUnitsCount(); k++) {
 			mBaseUnits[k] = baseunits[k];
 		}
 		mScaling = scaling;
@@ -90,9 +90,10 @@ public class PhysicalUnit {
 	 * @return the product
 	 */
 	public static PhysicalUnit product(PhysicalUnit lhs, PhysicalUnit rhs) {
-		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
+		double[] baseUnits = new double[Globals.getInstance().getBaseUnitsCount()];
 		
-		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+		
+		for(int k=0; k<Globals.getInstance().getBaseUnitsCount(); k++) {
 			baseUnits[k] = lhs.getBaseUnits()[k] + rhs.getBaseUnits()[k];
 		}
 		return new PhysicalUnit(lhs.getValue()*rhs.getValue(),lhs.getScaling()*rhs.getScaling(), baseUnits);
@@ -107,6 +108,7 @@ public class PhysicalUnit {
 	 */
 	public static PhysicalUnit product(PhysicalUnit lhs,
 			double rhs) {
+		
 		return new PhysicalUnit(rhs*lhs.getValue(),lhs.getScaling(),lhs.getBaseUnits());
 	}
 
@@ -118,9 +120,9 @@ public class PhysicalUnit {
 	 * @return the fraction
 	 */
 	public static PhysicalUnit fraction(PhysicalUnit lhs, PhysicalUnit rhs) {
-		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
+		double[] baseUnits = new double[Globals.getInstance().getBaseUnitsCount()];
 		
-		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+		for(int k=0; k<Globals.getInstance().getBaseUnitsCount(); k++) {
 			baseUnits[k] = lhs.getBaseUnits()[k] - rhs.getBaseUnits()[k];
 		}
 		
@@ -135,11 +137,12 @@ public class PhysicalUnit {
 	 * @return the power
 	 */
 	public static PhysicalUnit power(PhysicalUnit lhs, PhysicalUnit rhs) throws ExponentNotScalarError {
-		double[] baseUnits = new double[Globals.NUM_BASEUNITS];
+		double[] baseUnits = new double[Globals.getInstance().getBaseUnitsCount()];
+		
 		
 		if (rhs.getScaling()!=1.0) throw new ExponentNotScalarError();
 		
-		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+		for(int k=0; k<Globals.getInstance().getBaseUnitsCount(); k++) {
 			if (rhs.getBaseUnits()[k]!=0) {
 				throw new ExponentNotScalarError();
 			}
@@ -191,7 +194,7 @@ public class PhysicalUnit {
 	public boolean equals(PhysicalUnit other) {
 		
 		if (other.getScaling()!=mScaling) return false;
-		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+		for(int k=0; k<Globals.getInstance().getBaseUnitsCount(); k++) {
 			if (mBaseUnits[k]!=other.getBaseUnits()[k]) return false;
 		}
 		return true;
@@ -202,7 +205,7 @@ public class PhysicalUnit {
 	 */
 	public int hashCode() {
 		int retval = 0;
-		for(int k=0; k<Globals.NUM_BASEUNITS; k++) {
+		for(int k=0; k<Globals.getInstance().getBaseUnitsCount(); k++) {
 			retval += retval*7+((int) mBaseUnits[k])+3;
 		}
 		return retval;
@@ -215,7 +218,7 @@ public class PhysicalUnit {
 	 * @return the physical unit object
 	 */
 	public static PhysicalUnit getUnitless(double f) {
-		return product(Globals.UNIT_UNITLESS, f);
+		return product(Globals.getInstance().getUnitless(), f);
 	}
 	
 	/**

@@ -69,7 +69,8 @@ public class VariableManager {
 		 * @throws ScopeExistsError
 		 */
 		public void enterScope(String name,int inheritanceLevel) throws ScopeExistsError {
-			Globals.debug(String.format("Entering scope %s", name),mScopeWalk.size());
+			Globals.debug(String.format("Entering scope %s", name));
+			Globals.enterDebugLevel();
 			
 			if (mScopes.containsKey(name)) {
 				throw new ScopeExistsError(name);
@@ -105,7 +106,8 @@ public class VariableManager {
 		public void leaveScope() throws NotInAnyScopeError {
 			// TODO store scope to file
 			try {
-				Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()),mScopeWalk.size()-1);
+				Globals.leaveDebugLevel();
+				Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()));
 				mCurrentScope = mScopeWalk.pop();
 			} catch(Exception e) {
 				throw new NotInAnyScopeError();
@@ -119,7 +121,7 @@ public class VariableManager {
 		 * @throws InstanceExistsError
 		 */
 		public void addInstance(Instance instance) throws InstanceExistsError {
-			Globals.debug(String.format("Adding %s", instance.toString()),mScopeWalk.size());
+			Globals.debug(String.format("Adding %s", instance.toString()));
 			mCurrentScope.addInstance(instance);
 		}
 		

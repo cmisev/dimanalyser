@@ -19,31 +19,32 @@ package com.dimanalyser.test;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.dimanalyser.common.Globals;
-import com.dimanalyser.errors.ExponentNotScalarError;
 import com.dimanalyser.errors.InterpretationError;
 import com.dimanalyser.errors.LanguageNotSupportedError;
-import com.dimanalyser.errors.UnbalancedBracesError;
 import com.dimanalyser.interpreter.Interpreter;
 import com.dimanalyser.interpreter.InterpreterFactory;
-import com.dimanalyser.variablemanager.PhysicalUnit;
 
 public class InterpreterTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Globals.initUnits();
 	}
 
 	@After
@@ -74,39 +75,62 @@ public class InterpreterTest {
 	
 	@Test
 	public void testFortranInterpreter() {
-		List<String> lines = new ArrayList<String>();
-		File file = new File("testfortran.f90");
-		String line;
 		
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			while((line = reader.readLine())!=null) {
-				lines.add(line);
-			}
-			reader.close();
-		} catch (FileNotFoundException e) {
-			fail("FileNotFoundException raised while it shouldn't");
-		} catch (IOException e) {
-			fail("IOException raised while it shouldn't");
-		}
+		Globals.getInstance().openFile("res/test/fortran/testfortran.f90");
+
+		ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+		ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 		
-		int linenumber = 0;
+		System.setErr(new PrintStream(errContent));
+		System.setOut(new PrintStream(outContent));
 		
 		try {
 			Interpreter interpreter;
 			interpreter = InterpreterFactory.getInterpreter("fortran");
 		
-			while(linenumber<lines.size()) {
+			while(!Globals.getInstance().fileRead()) {
 				try {
-					linenumber = interpreter.interpretStatements(linenumber, lines);
-				} catch (InterpretationError e) {
-					System.err.println(String.format("Error in %s at line %d: %s",Globals.fileName,linenumber+1,e.getMessage()));
-					linenumber++;
+					interpreter.interpretStatements();
+				} catch (Exception e) {
+					System.err.println(String.format("Error in %s at line %d: %s",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber(),e.getMessage()));
+					if (!(e instanceof InterpretationError)) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (LanguageNotSupportedError e) {
-			fail("LanguageNotSupportedError raised while it shouldn't");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		try {
+			assertEquals(readFile("res/test/fortran/testfortran.output"), outContent.toString());
+			assertEquals(readFile("res/test/fortran/testfortran.err"), errContent.toString());
+		} catch (IOException e) {
+			fail("IOException raised while it shouldn't");
+		}
+		
+		System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+		System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err)));
+
+	}
+	
+	
+	private String readFile(String pathname) throws IOException {
+
+	    File file = new File(pathname);
+	    StringBuilder fileContents = new StringBuilder((int)file.length());
+	    Scanner scanner = new Scanner(file);
+	    String lineSeparator = System.getProperty("line.separator");
+
+	    try {
+	        while(scanner.hasNextLine()) {        
+	            fileContents.append(scanner.nextLine() + lineSeparator);
+	        }
+	        return fileContents.toString();
+	    } finally {
+	        scanner.close();
+	    }
 	}
 
 }

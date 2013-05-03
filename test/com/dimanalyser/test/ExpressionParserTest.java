@@ -106,16 +106,11 @@ public class ExpressionParserTest {
 				"**"
 		});
 		
-		ep.addUnaryOperator("-");
-		ep.addUnaryOperator("++");
+		ep.addUnaryOperatorInHierarchy("-");
+		ep.addUnaryOperatorInHierarchy("++");
 		
 		
-//		List<String> actual = ep.splitExpression("forces = (/ 1.0, -3.0, (mass1+mass2-mass3)*distance/time**2, -force2+force3 /)".replace(" ",""));
-//		
-//		for (String elem : actual) {
-//			System.out.println("["+elem+"]");
-//		}
-		//  calculate_force(\"coriolis\",2), calculate_force(), calculate_force(2.0)
+
 		try {
 			List<StackElement> actual = ep.parseExpression("forces = (/ 1.0, -3.0, (mass1+mass2-mass3)*distance/time**2, -force2+force3 /)".replace(" ",""));
 			

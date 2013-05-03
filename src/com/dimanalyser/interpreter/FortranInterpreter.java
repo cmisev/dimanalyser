@@ -20,7 +20,6 @@ package com.dimanalyser.interpreter;
 import java.util.List;
 import java.util.Stack;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.ExponentNotScalarError;
@@ -29,6 +28,7 @@ import com.dimanalyser.errors.InstanceNotFoundError;
 import com.dimanalyser.errors.InterpretationError;
 import com.dimanalyser.errors.NotInAnyScopeError;
 import com.dimanalyser.errors.ScopeExistsError;
+import com.dimanalyser.errors.UnableToMatchUnitsError;
 import com.dimanalyser.errors.UnbalancedBracesError;
 import com.dimanalyser.errors.UnitAlreadySetError;
 import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
@@ -54,6 +54,11 @@ public class FortranInterpreter extends Interpreter {
 	// TODO better way of doing it?
 	private FunctionInstance mCurrentFunctionInstance;
 	
+	/**
+	 * A list of keywords that can be ignored for unit checking purposes
+	 */
+	private String[] mIgnoreKeywords;
+	
 	
 	
 	/**
@@ -75,13 +80,20 @@ public class FortranInterpreter extends Interpreter {
 				","
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
-				".AND.",".OR."
+				".EQV.",".NEQV."
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
-				".EQ.",".NE."
+				".OR."
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
-				".LT.",".GT.",".GE.",".LE."
+				".AND."
+		});
+		mFortranParser.addUnaryOperatorInHierarchy(".NOT.");
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
+				".EQ.",".NE.",".LT.",".GT.",".GE.",".LE.","<",">","<=",">=","==","/="
+		});
+		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
+				"//"
 		});
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"+","-"
@@ -92,6 +104,18 @@ public class FortranInterpreter extends Interpreter {
 		mFortranParser.addBinaryOperatorInHierarchy(new String[]{
 				"**"
 		});
+		mFortranParser.addUnaryOperatorInHierarchy("-");
+		
+		mIgnoreKeywords = new String[]{
+				// F77
+				"ASSIGN","BACKSPACE","CLOSE","ENDFILE","FORMAT","GOTO","INQUIRE","OPEN","PAUSE","REWIND","STOP", 
+				// F90
+				"ALLOCATE","CYCLE","DEALLOCATE","EXIT","NAMELIST","NULLIFY","SEQUENCE",
+				// F2003
+				"FLUSH","WAIT",
+				// F2008
+				"ERROR STOP","SYNC","LOCK","UNLOCK"
+		};
 		
 	}
 
@@ -102,23 +126,23 @@ public class FortranInterpreter extends Interpreter {
 	 * @param linenumber the index in <pre>lines</pre> of the line to be interpreted.
 	 * @param lines all lines of the current file.
 	 * @return the next line index in <pre>lines</pre> to be read.
+	 * @throws UnableToMatchUnitsError 
 	 * @throws InterpretationError
 	 */
 	@Override
-	public int interpretStatements(int linenumber, List<String> lines) 
+	public void interpretStatements() 
 			throws UnbalancedBracesError, ScopeExistsError, UnitDeclarationsDontMatchError, 
 				InstanceExistsError, ExponentNotScalarError, NotInAnyScopeError, UnitAlreadySetError, 
-				InstanceNotFoundError, UnitsDontMatchError {
+				InstanceNotFoundError, UnitsDontMatchError, UnableToMatchUnitsError {
 		
 		
 		String comment = "";
 		String instructions = "&";
-		int linesinterpreted = 0;
 		
 		
 		while(instructions.endsWith("&")) {
-			String line = lines.get(linenumber+linesinterpreted);
-			int k = mFortranParser.getInterpretedIndex(line,Globals.COMMENT_START);
+			String line = Globals.getInstance().getNextLine();
+			int k = mFortranParser.getInterpretedIndex(line,"!");
 			
 			if (k < line.length()) {
 				comment = comment.concat(line.substring(k+1));
@@ -126,15 +150,12 @@ public class FortranInterpreter extends Interpreter {
 			}
 			
 			instructions = instructions.substring(0, instructions.length()-1).concat(line.trim());
-			linesinterpreted++;
 		}
 		
 		instructions = instructions.toUpperCase();
 		parseUnitDeclarationsFromComment(comment);
 		
-		interpredInstructions(instructions,linenumber);
-		
-		return linenumber+linesinterpreted;
+		interpredInstructions(instructions);
 	}
 	
 	/**
@@ -150,19 +171,23 @@ public class FortranInterpreter extends Interpreter {
 	 * @throws UnitDeclarationsDontMatchError 
 	 * @throws UnitsDontMatchError 
 	 * @throws NotInAnyScopeError 
+	 * @throws UnableToMatchUnitsError 
 	 */
-	private void interpredInstructions(String instructions, int linenumber) 
+	private void interpredInstructions(String instructions) 
 			throws ScopeExistsError, UnbalancedBracesError, InstanceNotFoundError, ExponentNotScalarError, 
-				InstanceExistsError, UnitAlreadySetError, UnitDeclarationsDontMatchError, UnitsDontMatchError, NotInAnyScopeError {
+				InstanceExistsError, UnitAlreadySetError, UnitDeclarationsDontMatchError, UnitsDontMatchError, NotInAnyScopeError, UnableToMatchUnitsError {
 		
 		instructions = instructions.trim();
 		
+		// TODO Fortran: Implement all possible ways of doing comments
+		// TODO Fortran: Implement all possible data types
+		
+		
 		// Fortran keyword, see http://fortranwiki.org/fortran/show/Keywords
-		// TODO Fortran 77: Interpretation and testing of assign keyword
-		// TODO Fortran 77: Interpretation and testing of backspace keyword
+		// DONE Fortran 77: Interpretation of ignore keywords: 
+		//   	assign, backspace, close, endfile, format, goto, inquire, open, pause, rewind, stop
 		// TODO Fortran 77: Interpretation and testing of block data keyword
 		// TODO Fortran 77: Interpretation and testing of call keyword
-		// TODO Fortran 77: Interpretation and testing of close keyword
 		// TODO Fortran 77: Interpretation and testing of common keyword
 		// TODO Fortran 77: Interpretation and testing of continue keyword
 		// TODO Fortran 77: Interpretation and testing of data keyword
@@ -171,47 +196,37 @@ public class FortranInterpreter extends Interpreter {
 		// TODO Fortran 77: Interpretation and testing of else keyword
 		// TODO Fortran 77: Interpretation and testing of else if keyword
 		// TODO Fortran 77: Interpretation and testing of end keyword
-		// TODO Fortran 77: Interpretation and testing of endfile keyword
 		// TODO Fortran 77: Interpretation and testing of endif keyword
 		// TODO Fortran 77: Interpretation and testing of entry keyword
 		// TODO Fortran 77: Interpretation and testing of equivalence keyword
 		// TODO Fortran 77: Interpretation and testing of external keyword
-		// TODO Fortran 77: Interpretation and testing of format keyword
 		// TODO Fortran 77: Interpretation and testing of function keyword
-		// TODO Fortran 77: Interpretation and testing of goto keyword
 		// TODO Fortran 77: Interpretation and testing of if keyword
 		// TODO Fortran 77: Interpretation and testing of implicit keyword
 		// TODO Fortran 77: Interpretation and testing of inquire keyword
 		// TODO Fortran 77: Interpretation and testing of intrinsic keyword
 		// TODO Fortran 77: Interpretation and testing of open keyword
 		// TODO Fortran 77: Interpretation and testing of parameter keyword
-		// TODO Fortran 77: Interpretation and testing of pause keyword
 		// TODO Fortran 77: Interpretation and testing of print keyword
 		// TODO Fortran 77: Interpretation and testing of program keyword
 		// TODO Fortran 77: Interpretation and testing of read keyword
 		// TODO Fortran 77: Interpretation and testing of return keyword
-		// TODO Fortran 77: Interpretation and testing of rewind keyword
 		// TODO Fortran 77: Interpretation and testing of rewrite keyword
 		// TODO Fortran 77: Interpretation and testing of save keyword
-		// TODO Fortran 77: Interpretation and testing of stop keyword
 		// TODO Fortran 77: Interpretation and testing of subroutine keyword
 		// TODO Fortran 77: Interpretation and testing of then keyword
 		// TODO Fortran 77: Interpretation and testing of write keyword
-		
-		// TODO Fortran 90: Interpretation and testing of allocate keyword
+
+		// DONE Fortran 90: Interpretation of ignore keywords: 
+		//   	allocate, cycle, deallocate, exit, namelist, nullify, sequence
 		// TODO Fortran 90: Interpretation and testing of allocatable keyword
 		// TODO Fortran 90: Interpretation and testing of case keyword
 		// TODO Fortran 90: Interpretation and testing of contains keyword
-		// TODO Fortran 90: Interpretation and testing of cycle keyword
-		// TODO Fortran 90: Interpretation and testing of deallocate keyword
 		// TODO Fortran 90: Interpretation and testing of elsewhere keyword
-		// TODO Fortran 90: Interpretation and testing of exit keyword
 		// TODO Fortran 90: Interpretation and testing of include keyword
 		// TODO Fortran 90: Interpretation and testing of interface keyword
 		// TODO Fortran 90: Interpretation and testing of intent keyword
 		// TODO Fortran 90: Interpretation and testing of module keyword
-		// TODO Fortran 90: Interpretation and testing of namelist keyword
-		// TODO Fortran 90: Interpretation and testing of nullify keyword
 		// TODO Fortran 90: Interpretation and testing of only keyword
 		// TODO Fortran 90: Interpretation and testing of operator keyword
 		// TODO Fortran 90: Interpretation and testing of optional keyword
@@ -222,7 +237,6 @@ public class FortranInterpreter extends Interpreter {
 		// TODO Fortran 90: Interpretation and testing of result keyword
 		// TODO Fortran 90: Interpretation and testing of recursive keyword
 		// TODO Fortran 90: Interpretation and testing of select keyword
-		// TODO Fortran 90: Interpretation and testing of sequence keyword
 		// TODO Fortran 90: Interpretation and testing of target keyword
 		// TODO Fortran 90: Interpretation and testing of use keyword
 		// TODO Fortran 90: Interpretation and testing of while keyword
@@ -232,7 +246,10 @@ public class FortranInterpreter extends Interpreter {
 		// TODO Fortran 95: Interpretation and testing of forall keyword
 		// TODO Fortran 95: Interpretation and testing of pure keyword 
 		
-		// TODO Fortran 2003: Interpretation and testing abstract keyword
+
+		// DONE Fortran 2003: Interpretation of ignore keywords: 
+		//   	flush,wait
+		// TODO Fortran 2003: Interpretation and testing of abstract keyword
 		// TODO Fortran 2003: Interpretation and testing of associate keyword
 		// TODO Fortran 2003: Interpretation and testing of asynchronous keyword
 		// TODO Fortran 2003: Interpretation and testing of bind keyword
@@ -242,7 +259,6 @@ public class FortranInterpreter extends Interpreter {
 		// TODO Fortran 2003: Interpretation and testing of enumerator keyword
 		// TODO Fortran 2003: Interpretation and testing of extends keyword
 		// TODO Fortran 2003: Interpretation and testing of final keyword
-		// TODO Fortran 2003: Interpretation and testing of flush keyword
 		// TODO Fortran 2003: Interpretation and testing of generic keyword
 		// TODO Fortran 2003: Interpretation and testing of import keyword
 		// TODO Fortran 2003: Interpretation and testing of non_overridable keyword
@@ -251,31 +267,30 @@ public class FortranInterpreter extends Interpreter {
 		// TODO Fortran 2003: Interpretation and testing of protected keyword
 		// TODO Fortran 2003: Interpretation and testing of value keyword
 		// TODO Fortran 2003: Interpretation and testing of volatile keyword
-		// TODO Fortran 2003: Interpretation and testing of wait keyword
 		
+		// DONE Fortran 2008: Interpretation of ignore keywords: 
+		//   	error stop, sync, lock, unlock
 		// TODO Fortran 2008: Interpretation and testing of block keyword
 		// TODO Fortran 2008: Interpretation and testing of codimension keyword
 		// TODO Fortran 2008: Interpretation and testing of do concurrent keyword
 		// TODO Fortran 2008: Interpretation and testing of contiguous keyword
 		// TODO Fortran 2008: Interpretation and testing of critical keyword
-		// TODO Fortran 2008: Interpretation and testing of error stop keyword
 		// TODO Fortran 2008: Interpretation and testing of submodule keyword
-		// TODO Fortran 2008: Interpretation and testing of sync all keyword
-		// TODO Fortran 2008: Interpretation and testing of sync images keyword
-		// TODO Fortran 2008: Interpretation and testing of sync memory keyword
-		// TODO Fortran 2008: Interpretation and testing of lock keyword
-		// TODO Fortran 2008: Interpretation and testing of unlock keyword
 				
-		if (instructions.startsWith("PROGRAM ")) {
+		if (instructions.startsWith("PROGRAM ") || instructions.equals("PROGRAM")) {
 			mVariableManager.enterScope("PROGRAM", InheritanceLevel.SCOPE_PRIVATE);
+		
+		} else if (instructions.startsWith("BLOCK ") || instructions.equals("BLOCK")) {
+			mVariableManager.enterScope(String.format("BLOCK_%s:%d",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber()), InheritanceLevel.SCOPE_PRIVATE);
 		} else if (instructions.startsWith("SUBROUTINE ")) {
 			List<String> parameterList = mFortranParser.getParametersList(instructions.substring(11));
 			
 			try {
-				mCurrentFunctionInstance = new FunctionInstance(parameterList.get(0).trim(), InheritanceLevel.SCOPE_PRIVATE, Globals.UNIT_UNITLESS);
-				mVariableManager.addInstance(mCurrentFunctionInstance);
-			} catch(InstanceExistsError ie) {
 				mCurrentFunctionInstance = (FunctionInstance) mVariableManager.getInstance(parameterList.get(0).trim());
+						
+			} catch(InstanceNotFoundError ie) {
+				mCurrentFunctionInstance = new FunctionInstance(parameterList.get(0).trim(), InheritanceLevel.SCOPE_PRIVATE, Globals.getInstance().getUnitless());
+				mVariableManager.addInstance(mCurrentFunctionInstance);
 			}
 			for(int i=1; i<parameterList.size(); i++) {
 				mCurrentFunctionInstance.setParameterName(i-1,(parameterList.get(i)));
@@ -294,36 +309,35 @@ public class FortranInterpreter extends Interpreter {
 		} else if (instructions.startsWith("CALL ")) {
 			checkUnits(instructions.substring(5));
 		} else if (instructions.startsWith("DO ")) {
-			mVariableManager.enterScope(String.format("DO_%s:%d",Globals.fileName,linenumber), InheritanceLevel.SCOPE_PUBLIC);
+			mVariableManager.enterScope(String.format("DO_%s:%d",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber()), InheritanceLevel.SCOPE_PUBLIC);
 			if (instructions.startsWith("DO WHILE ") || instructions.startsWith("DO WHILE(")) {
-				interpredInstructions(instructions.substring(8),linenumber);
+				interpredInstructions(instructions.substring(8));
 			} else {
-				interpredInstructions(instructions.substring(3),linenumber);
+				interpredInstructions(instructions.substring(3));
 			}
 		} else if (instructions.startsWith("IF(") || instructions.startsWith("IF ")) {
 			if (instructions.endsWith("THEN")) {
-				mVariableManager.enterScope(String.format("IF_%s:%d",Globals.fileName,linenumber), InheritanceLevel.SCOPE_PUBLIC);
+				mVariableManager.enterScope(String.format("IF_%s:%d",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber()), InheritanceLevel.SCOPE_PUBLIC);
 				checkUnits(instructions.substring(2,instructions.length()-4));
 			} else {
 				int start = mFortranParser.getInterpretedIndex(instructions, "(");
 				int end = mFortranParser.getInterpretedIndex(instructions, ")",start+1);
 				checkUnits(instructions.substring(start+1,end));
-				interpredInstructions(instructions.substring(end+1), linenumber);
+				interpredInstructions(instructions.substring(end+1));
 			}
 		} else if (instructions.startsWith("ELSE")) {
 			mVariableManager.leaveScope();
 			if (instructions.equals("ELSE")) {
-				mVariableManager.enterScope(String.format("ELSE_%s:%d",Globals.fileName,linenumber), InheritanceLevel.SCOPE_PUBLIC);
+				mVariableManager.enterScope(String.format("ELSE_%s:%d",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber()), InheritanceLevel.SCOPE_PUBLIC);
 			} else {
-				interpredInstructions(instructions.substring(5), linenumber);
+				interpredInstructions(instructions.substring(5));
 			}
-		} else if (instructions.equals("STOP") || instructions.startsWith("STOP ") || instructions.startsWith("STOP(") || instructions.equals("ELSE") || instructions.startsWith("GOTO ")) {
 		} else if (instructions.equals("END") || instructions.startsWith("END ") || instructions.equals("CONTINUE")) {
 			mVariableManager.leaveScope();
 			mCurrentFunctionInstance = null;
 		} else if (instructions.startsWith("CONTAINS")) {
 			mCurrentFunctionInstance = null;
-		} else if (!instructions.equals("")) {
+		} else if (!(instructions.equals("") || instructionInIgnoreKeyWords(instructions))) {
 			if ("0123456789".contains(instructions.substring(0,1))) {
 				// TODO Better way of doing it
 				int k=1;
@@ -331,7 +345,7 @@ public class FortranInterpreter extends Interpreter {
 					k++;
 				}
 				if (k<instructions.length()) {
-					interpredInstructions(instructions.substring(k), linenumber);
+					interpredInstructions(instructions.substring(k));
 				}
 			} else {
 				checkUnits(instructions);
@@ -339,7 +353,19 @@ public class FortranInterpreter extends Interpreter {
 		}
 	}
 	
-
+	/**
+	 * Helper method. Check if instruction starts with/is a keyword in the list of instructions that are save to ignore.
+	 *  
+	 * @param instructions the instruction line
+	 * @return <pre>true<pre> if the instruction is save to ignore
+	 */
+	private boolean instructionInIgnoreKeyWords(String instructions) {
+		for (String ikw : mIgnoreKeywords) {
+			if (instructions.equals(ikw) || instructions.startsWith(ikw + " ") || instructions.startsWith(ikw + "(")) return true;
+		}
+		return false;
+	}
+	
 
 	/**
 	 * Helper method. Declare the unit of a certain instance. Distinguish between a parameter of the
@@ -377,8 +403,9 @@ public class FortranInterpreter extends Interpreter {
 	 * @throws UnitAlreadySetError
 	 * @throws InstanceExistsError
 	 * @throws UnitDeclarationsDontMatchError 
+	 * @throws UnableToMatchUnitsError 
 	 */
-	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError, UnitDeclarationsDontMatchError {
+	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError, UnitDeclarationsDontMatchError, UnableToMatchUnitsError {
 		// TODO maybe move to ExpressionParser, handle operations with interfaces?
 		List<StackElement> expr = mFortranParser.parseExpression(expression.trim());
 		Stack<StackElement> stack = new Stack<StackElement>();
@@ -406,17 +433,10 @@ public class FortranInterpreter extends Interpreter {
 					int elementcount = stack.pop().getOperandsCount();
 					StackElement reference = stack.pop();
 					String listexpression = reference.getExpression();
+					
 					for (int j=1; j<elementcount; j++) {
 						StackElement current = stack.pop();
-						if (reference.getUnit() == null && current.getUnit() !=null) {
-							reference.setUnit(current.getUnit());
-							mVariableManager.getInstance(reference.getExpression().trim()).setUnit(current.getUnit());
-						} else if (reference.getUnit() != null && current.getUnit() ==null) {
-							current.setUnit(reference.getUnit());
-							mVariableManager.getInstance(current.getExpression().trim()).setUnit(reference.getUnit());
-						} else if (reference.getUnit() != null && current.getUnit()!=null && !reference.getUnit().equals(current.getUnit())) {
-							throw new UnitsDontMatchError(reference, current, elementcount-j);
-						} 
+						setEqualUnits(reference, current, elementcount-j);
 						listexpression = current.getExpression() + "," + listexpression;
 					}
 					stack.push(new StackElement(listexpression,reference.getUnit()));
@@ -425,19 +445,8 @@ public class FortranInterpreter extends Interpreter {
 				StackElement rhs = stack.pop();
 				StackElement lhs = stack.pop();
 				
-				if (rhs.getUnit()==null && lhs.getUnit()==null) {
-					throw new NotImplementedException();
-				} else if (rhs.getUnit()==null) {
-					mVariableManager.getInstance(rhs.getExpression().trim()).setUnit(lhs.getUnit());
-					rhs.setUnit(lhs.getUnit());
-				} else if (lhs.getUnit()==null) {
-					mVariableManager.getInstance(lhs.getExpression().trim()).setUnit(rhs.getUnit());
-					lhs.setUnit(rhs.getUnit());
-				} else {
-					if (!lhs.getUnit().equals(rhs.getUnit())) {
-						throw new UnitsDontMatchError(lhs, rhs, s);
-					}
-				}
+				setEqualUnits(lhs, rhs, s);
+			
 				stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),lhs.getUnit()));
 			} else if (s.equals("(")) {
 				stack.lastElement().setExpression((String.format("(%s)", stack.lastElement().getExpression())));

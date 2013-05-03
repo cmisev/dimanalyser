@@ -113,9 +113,7 @@ public class FunctionInstance extends Instance {
 	 */
 	public void setParameterName(int i, String name) {
 		if (i<mParameters.size()) {
-			VariableInstance vi = mParameters.get(i);
-			mParameters.remove(i);
-			mParameters.add(i,new VariableInstance(name,InheritanceLevel.SCOPE_PROTECTED,vi.getUnit()));
+			mParameters.get(i).setName(name);
 		} else {
 			addParameter(name);
 		}
@@ -173,7 +171,7 @@ public class FunctionInstance extends Instance {
 		if (mReturnUnit==null) {
 			mReturnUnit = unit;
 		} else {
-			throw new UnitAlreadySetError(mName);
+			throw new UnitAlreadySetError(this);
 		}
 	}
 
