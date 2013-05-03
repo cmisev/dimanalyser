@@ -478,9 +478,7 @@ public class FortranInterpreter extends Interpreter {
 							if (instance instanceof FunctionInstance) {
 								FunctionInstance fi = (FunctionInstance) instance;
 								for (int i=0; i<parameterCount; i++) {
-									if (!fi.getParameter(i).getUnit().equals(stack.get(stack.size()-parameterCount+i).getUnit())){
-										throw new UnitsDontMatchError(i+1, stack.get(stack.size()-parameterCount+i), fi.getParameter(i).getUnit(), s);
-									}
+									setEqualUnits(stack.get(stack.size()-parameterCount+i), fi.getParameter(i), s, i+1);
 								}
 							}
 						} catch (InstanceNotFoundError inf) {

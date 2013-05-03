@@ -33,6 +33,7 @@ import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
 import com.dimanalyser.errors.UnitsDontMatchError;
 import com.dimanalyser.variablemanager.Instance;
 import com.dimanalyser.variablemanager.PhysicalUnit;
+import com.dimanalyser.variablemanager.VariableInstance;
 import com.dimanalyser.variablemanager.VariableManager;
 
 /**
@@ -229,7 +230,7 @@ public abstract class Interpreter {
 	}
 	
 	/**
-	 * Private helper method to set units of stack elements equal if the operation implies equal units
+	 * Private helper method to set units of stack elements equal if a list implies equal units
 	 * 
 	 * @param reference first operand of the operation
 	 * @param current second operand of the operation
@@ -267,6 +268,41 @@ public abstract class Interpreter {
 			}
 		} catch (InstanceNotFoundError e) {
 			throw new UnableToMatchUnitsError(reference,current);
+		}
+	}
+	
+	/**
+	 * Private helper method to set units of stack elements equal if a functions parameter imply equal units
+	 * 
+	 * @param reference first operand of the operation
+	 * @param current second operand of the operation
+	 * @param s the operator
+	 * @throws UnableToMatchUnitsError
+	 * @throws UnitAlreadySetError
+	 * @throws UnitsDontMatchError 
+	 */
+	protected void setEqualUnits(StackElement required, VariableInstance parameter, StackElement function, int j) throws UnableToMatchUnitsError, UnitAlreadySetError, UnitsDontMatchError {
+		try {
+			if (required.getUnit()==null && parameter.getUnit()==null) {
+				throw new UnableToMatchUnitsError(required,j,function);
+			} else if (required.getUnit()==null) {
+				required.setUnit(parameter.getUnit());
+				mVariableManager.getInstance(required.getExpression().trim()).setUnit(parameter.getUnit(),parameter);
+			} else if (parameter.getUnit()==null) {
+				parameter.setUnit(required.getUnit());
+				Instance origin = null;
+				try {
+					origin = mVariableManager.getInstance(required.getExpression().trim());
+				} catch (InstanceNotFoundError inf) {
+				}
+				parameter.setUnit(required.getUnit(),origin);
+			} else {
+				if (!parameter.getUnit().equals(required.getUnit())) {
+					throw new UnitsDontMatchError(j, required, parameter.getUnit(), function);
+				}
+			}
+		} catch (InstanceNotFoundError e) {
+			throw new UnableToMatchUnitsError(required,j,function);
 		}
 	}
 }

@@ -18,6 +18,7 @@
 package com.dimanalyser.errors;
 
 import com.dimanalyser.interpreter.StackElement;
+import com.dimanalyser.variablemanager.VariableInstance;
 
 /**
  * Error thrown if the units can't be matched (i.e.) if attempting to set an unit of a mixed expression.
@@ -39,5 +40,16 @@ public class UnableToMatchUnitsError extends InterpretationError {
 	public UnableToMatchUnitsError(StackElement lhs, StackElement rhs) {
 		super(String.format("Units of expressions %s and %s can't be matched",lhs.getExpression(),rhs.getExpression()));
 	}
+
+
+	/**
+	 * @param function 
+	 * @param required
+	 * @param parameter
+	 */
+	public UnableToMatchUnitsError(StackElement current, int j, StackElement function) {
+		super(String.format("Units of expressions %s can't be matched to parameter %d of function call %s",current.getExpression(),j,function.getExpression()));
+	}
+
 
 }

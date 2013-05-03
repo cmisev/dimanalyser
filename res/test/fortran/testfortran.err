@@ -1,3 +1,5 @@
 Error in res/test/fortran/testfortran.f90 at line 6: Number of Unit declarations don't match
 Error in res/test/fortran/testfortran.f90 at line 7: Number of Unit declarations don't match
-Error in res/test/fortran/testfortran.f90 at line 32: Units don't match at .GT. operation. [X2 ]=m should be [ 0]=1 
+Error in res/test/fortran/testfortran.f90 at line 29: Units of expressions X1  and  X2 can't be matched
+Error in res/test/fortran/testfortran.f90 at line 36: Units don't match at .GT. operation. [X2 ]=m should be [ 0]=1 
+Error in res/test/fortran/testfortran.f90 at line 37: Number of Unit declarations don't match
