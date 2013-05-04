@@ -67,6 +67,12 @@ public class StackElement extends UnitsMatchable {
 		mUnit = unit;
 		mOperandsCount = operandsCount;
 		mUnitSetCallback = callback;
+		
+		if (unit!=null) {
+			mUnit = unit;
+			mUnitDefinedAtLineNumber = Globals.getInstance().getLineNumber();
+			mUnitDefinedInFileName = Globals.getInstance().getCurrentFilename();
+		}
 	}
 	
 	/**
@@ -97,16 +103,6 @@ public class StackElement extends UnitsMatchable {
 		this(expression,null,2,callback);
 	}
 
-	
-	/**
-	 * Constructor initializing the stack element without the operands count being defined
-	 * @param expression the human-readable string of the expression
-	 * @param unit resulting unit of the expression
-	 * @param callback the callback to call upon setting the unit
-	 */
-	public StackElement(String expression, PhysicalUnit unit, ISetUnitCallback callback) {
-		this(expression,unit,2,callback);
-	}
 	
 	/**
 	 * Constructor initializing the stack element as an operand without the unit being defined
@@ -164,7 +160,7 @@ public class StackElement extends UnitsMatchable {
 	
 	/**
 	 * Set the unit callback
-	 * @param unit callback function to call if the unit is being set on this stack element
+	 * @param callback callback function to call if the unit is being set on this stack element
 	 * @throws UnableToMatchUnitsError 
 	 */
 	public void setUnitSetCallback(ISetUnitCallback callback) throws UnableToMatchUnitsError {

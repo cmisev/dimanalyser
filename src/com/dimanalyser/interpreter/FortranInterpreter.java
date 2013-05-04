@@ -525,10 +525,9 @@ public class FortranInterpreter extends Interpreter {
 					for (int j=1; j<elementcount; j++) {
 						final StackElement list = stack.pop();
 						final StackElement listelement = stack.pop();
-						setEqualUnits(listelement, list, "list");
 						try {
-							setEqualUnits(listelement, list, ",");
-							stack.push(new StackElement(String.format("%s,%s", listelement.getExpression(), ",", list.getExpression()),list.getUnit()));
+							setEqualUnits(listelement, list, "list");
+							stack.push(new StackElement(String.format("%s,%s", listelement.getExpression(), list.getExpression()),list.getUnit()));
 						} catch(UnableToMatchUnitsError me) {
 							stack.push(new StackElement(String.format("%s,%s", listelement.getExpression(), ",", list.getExpression()),new ISetUnitCallback() {
 								@Override
