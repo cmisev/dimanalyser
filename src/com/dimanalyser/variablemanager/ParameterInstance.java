@@ -17,9 +17,6 @@
 
 package com.dimanalyser.variablemanager;
 
-import com.dimanalyser.common.Globals;
-import com.dimanalyser.errors.UnitAlreadySetError;
-
 /**
  * Instance holding information about a typical one-value variable.
  * 

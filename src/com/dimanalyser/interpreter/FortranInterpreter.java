@@ -428,7 +428,10 @@ public class FortranInterpreter extends Interpreter {
 			} else if (s.equals("+") || s.equals("-") || 
 					s.equals(".LE.") || s.equals(".LT.") || 
 					s.equals(".GT.") || s.equals(".GE.") || 
-					s.equals(".EQ.") || s.equals("=")) {
+					s.equals(".EQ.") || s.equals(".NE.") || 
+					s.equals("<=") || s.equals("<") || 
+					s.equals(">") || s.equals(">=") || 
+					s.equals("=")) {
 				
 				if (stack.lastElement().equals(",")) {
 					int elementcount = stack.pop().getOperandsCount();

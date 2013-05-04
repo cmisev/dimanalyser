@@ -41,9 +41,9 @@ PROGRAM test
 
         IF (x2.eq. 0) CALL test_after_call_upu(x1,mass,time)  ! U(m)
 
-        IF (x1.gt. 0.5) THEN ! U(m)
+        IF (x1.ge. 0.5) THEN ! U(m)
             CALL test_after_call_upu(x4,mass,time)
-        ELSE IF (x1 .eq. 0.5) THEN !U(m)
+        ELSE IF (x1 .ne. 0.5) THEN !U(m)
         END IF
     END DO
 
