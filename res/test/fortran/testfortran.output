@@ -5,11 +5,11 @@
   10 Leaving scope BLOCK_res/test/fortran/testfortran.f90:4
   15 Adding function instance TEST_BEFORE_CALL_DPU [1]
   15 Entering scope TEST_BEFORE_CALL_DPU
-  16     Unit of variable instance A set to m
+  16     Unit of parameter 1 (A) set to m
   16     Adding variable instance [A]=m
-  16     Unit of variable instance B set to kg
+  16     Unit of parameter 2 (B) set to kg
   16     Adding variable instance [B]=kg
-  16     Unit of variable instance C set to s
+  16     Unit of parameter 3 (C) set to s
   16     Adding variable instance [C]=s
   18     Adding variable instance D, unit not yet determined
   18     Adding variable instance E, unit not yet determined
@@ -30,6 +30,7 @@
   36     Adding variable instance X4, unit not yet determined
   37     Adding variable instance [MASS]=kg
   37     Adding variable instance [TIME]=s
+Warning in res/test/fortran/testfortran.f90 at line 39: The expression seems to have no unit
   41     Entering scope DO_res/test/fortran/testfortran.f90:41
   41         Unit of variable instance XMAX set to m
   41         Unit of variable instance X1 set to m
@@ -46,17 +47,21 @@
   57     Leaving scope DO_res/test/fortran/testfortran.f90:41
   61     Adding function instance TEST_AFTER_CALL_UPU [1]
   61     Entering scope TEST_AFTER_CALL_UPU
-  62         Unit of variable instance A set to kg
+  62         Unit of parameter 1 (A) set to kg
   62         Adding variable instance [A]=kg
-  62         Unit of variable instance B set to kg
+  62         Unit of parameter 2 (B) set to kg
   62         Adding variable instance [B]=kg
-  62         Unit of variable instance C set to kg
+  62         Unit of parameter 3 (C) set to kg
   62         Adding variable instance [C]=kg
   65     Leaving scope TEST_AFTER_CALL_UPU
   67     Adding function instance TEST_NO_PARAMETERS [1]
   67     Entering scope TEST_NO_PARAMETERS
-  68     Leaving scope TEST_NO_PARAMETERS
-  70     Adding function instance TEST_NO_PARAMETERS_NOBRACES [1]
-  70     Entering scope TEST_NO_PARAMETERS_NOBRACES
-  71     Leaving scope TEST_NO_PARAMETERS_NOBRACES
-  73 Leaving scope PROGRAM
+  68         Adding variable instance [ENERGY]=m^2 kg s^-2
+  69         Adding variable instance [MASS]=kg
+  70         Adding variable instance VELOCITY, unit not yet determined
+  72         Unit of variable instance VELOCITY set to m s^-1
+  74     Leaving scope TEST_NO_PARAMETERS
+  76     Adding function instance TEST_NO_PARAMETERS_NOBRACES [1]
+  76     Entering scope TEST_NO_PARAMETERS_NOBRACES
+  77     Leaving scope TEST_NO_PARAMETERS_NOBRACES
+  79 Leaving scope PROGRAM

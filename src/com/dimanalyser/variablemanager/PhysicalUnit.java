@@ -126,7 +126,7 @@ public class PhysicalUnit {
 			baseUnits[k] = lhs.getBaseUnits()[k] - rhs.getBaseUnits()[k];
 		}
 		
-		return new PhysicalUnit(lhs.getScaling()/rhs.getScaling(), baseUnits);
+		return new PhysicalUnit(lhs.getValue()/rhs.getValue(),lhs.getScaling()/rhs.getScaling(), baseUnits);
 	}
 	
 	/**

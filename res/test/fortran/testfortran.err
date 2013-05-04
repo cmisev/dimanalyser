@@ -10,7 +10,6 @@ Error in res/test/fortran/testfortran.f90 at line 24: Units don't match at = ope
     @ res/test/fortran/testfortran.f90: 20 by A
     @ res/test/fortran/testfortran.f90: 16
 
-Error in res/test/fortran/testfortran.f90 at line 39: Units of expression X1, unit not yet defined and expression X2, unit not yet defined at = operation can't be matched
 Error in res/test/fortran/testfortran.f90 at line 46: Units don't match at .GT. operation. variable instance [X2]=m should be expression [0]=1
   X2 Definition trace:
     @ res/test/fortran/testfortran.f90: 43 by X1

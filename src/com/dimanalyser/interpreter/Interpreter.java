@@ -97,8 +97,10 @@ public abstract class Interpreter {
 	 * @param string the comment to be interpreted
 	 * @throws UnbalancedBracesError
 	 * @throws ExponentNotScalarError
+	 * @throws UnableToMatchUnitsError 
+	 * @throws UnitAlreadySetError 
 	 */
-	protected void parseUnitDeclarationsFromComment(String string) throws UnbalancedBracesError, ExponentNotScalarError {
+	protected void parseUnitDeclarationsFromComment(String string) throws UnbalancedBracesError, ExponentNotScalarError, UnitAlreadySetError, UnableToMatchUnitsError {
 		mUnitsBuffer = new ArrayList<PhysicalUnit>();
 		
 		int start = 0;
@@ -155,8 +157,10 @@ public abstract class Interpreter {
 	 * @return the corresponding physical unit
 	 * @throws UnbalancedBracesError
 	 * @throws ExponentNotScalarError
+	 * @throws UnableToMatchUnitsError 
+	 * @throws UnitAlreadySetError 
 	 */
-	private PhysicalUnit parseUnitDeclaration(String string) throws UnbalancedBracesError, ExponentNotScalarError {
+	private PhysicalUnit parseUnitDeclaration(String string) throws UnbalancedBracesError, ExponentNotScalarError, UnitAlreadySetError, UnableToMatchUnitsError {
 		List<StackElement> expr = mUnitDeclarationsParser.parseExpression(string);
 		
 		Stack<StackElement> stack = new Stack<StackElement>();
@@ -199,42 +203,35 @@ public abstract class Interpreter {
 	 * @throws UnitsDontMatchError 
 	 */
 	protected void setEqualUnits(UnitsMatchable lhs, UnitsMatchable rhs, String s) throws UnableToMatchUnitsError, UnitAlreadySetError, UnitsDontMatchError {
-		try {
-			if (rhs.getUnit()==null && lhs.getUnit()==null) {
-				throw new UnableToMatchUnitsError(lhs,rhs,s);
-			} else if (rhs.getUnit()==null) {
-				rhs.setUnit(lhs.getUnit());
-				
-				Instance origin = null;
-				try {
-					origin = mVariableManager.getInstance(lhs.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				mVariableManager.getInstance(rhs.getExpression().trim()).setUnit(lhs.getUnit(),origin);
-				
-			} else if (lhs.getUnit()==null) {
-				lhs.setUnit(rhs.getUnit());
-				Instance origin = null;
-				try {
-					origin = mVariableManager.getInstance(rhs.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				mVariableManager.getInstance(lhs.getExpression().trim()).setUnit(rhs.getUnit(),origin);
-			} else {
-				try {
-					rhs = mVariableManager.getInstance(rhs.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				try {
-					lhs = mVariableManager.getInstance(lhs.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				if (!lhs.getUnit().equals(rhs.getUnit())) {
-					throw new UnitsDontMatchError(lhs, rhs, s);
-				}
-			}
-		} catch (InstanceNotFoundError e) {
+		if (rhs.getUnit()==null && lhs.getUnit()==null) {
 			throw new UnableToMatchUnitsError(lhs,rhs,s);
+		} else if (rhs.getUnit()==null) {
+			Instance origin = null;
+			try {
+				origin = mVariableManager.getInstance(lhs.getExpression().trim());
+			} catch (InstanceNotFoundError inf) {
+			}
+			rhs.setUnit(lhs.getUnit(),origin);
+			
+		} else if (lhs.getUnit()==null) {
+			Instance origin = null;
+			try {
+				origin = mVariableManager.getInstance(rhs.getExpression().trim());
+			} catch (InstanceNotFoundError inf) {
+			}
+			lhs.setUnit(rhs.getUnit(),origin);
+		} else {
+			try {
+				rhs = mVariableManager.getInstance(rhs.getExpression().trim());
+			} catch (InstanceNotFoundError inf) {
+			}
+			try {
+				lhs = mVariableManager.getInstance(lhs.getExpression().trim());
+			} catch (InstanceNotFoundError inf) {
+			}
+			if (!lhs.getUnit().equals(rhs.getUnit())) {
+				throw new UnitsDontMatchError(lhs, rhs, s);
+			}
 		}
 	}
 }

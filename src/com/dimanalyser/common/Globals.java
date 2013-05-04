@@ -59,6 +59,11 @@ public final class Globals {
 	 */
 	private String mFileName = "testfortran.f90";
 	
+	/**
+	 * Temporary scope storage dir
+	 */
+	private String mScopesDir = "res/test/fortran/scopes";
+
 	
 	/**
 	 * Line number of currently processed file
@@ -167,6 +172,14 @@ public final class Globals {
 	public String getCurrentFilename() {
 		return mFileName;
 	}
+	
+	/**
+	 * Get the scope temporary dir
+	 * @return the scope temporary dir 
+	 */
+	public String getScopeDir() {
+		return mScopesDir;
+	}
 
 	/**
 	 * Open a filename and set the line number to the beginning of the file
@@ -216,6 +229,23 @@ public final class Globals {
 	 */
 	public int getLineNumber() {
 		return mLineNumber;
+	}
+
+
+	/**
+	 * Print out a warning message
+	 * @param message the warning to print out
+	 */
+	public void warnMessage(String message) {
+		System.out.println(String.format("Warning in %s at line %d: %s",mFileName,mLineNumber,message));
+	}
+	
+	/**
+	 * Print out a warning message
+	 * @param message the warning to print out
+	 */
+	public void errorMessage(String message) {
+		System.err.println(String.format("Error in %s at line %d: %s",mFileName,mLineNumber,message));
 	}
 	
 	

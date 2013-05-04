@@ -17,6 +17,8 @@
 
 package com.dimanalyser.variablemanager;
 
+import java.io.Serializable;
+
 import com.dimanalyser.common.Globals;
 import com.dimanalyser.errors.UnitAlreadySetError;
 
@@ -96,6 +98,5 @@ abstract public class Instance extends UnitsMatchable {
 	public String getExpression() {
 		return mName;
 	}
-
 
 }

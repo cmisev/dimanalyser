@@ -17,6 +17,9 @@
 
 package com.dimanalyser.variablemanager;
 
+import com.dimanalyser.common.Globals;
+import com.dimanalyser.errors.UnitAlreadySetError;
+
 /**
  * Instance holding information about a typical one-value variable.
  * 
@@ -75,5 +78,26 @@ public class ParameterInstance extends VariableInstance {
 	public void setName(String name) {
 		mName = name;
 	}
+	
+	/**
+	 * Set the physical unit of the instance.
+	 * 
+	 * @param unit the unit to be set.
+	 * @throws UnitAlreadySetError
+	 */
+	@Override
+	public void setUnit(PhysicalUnit unit) throws UnitAlreadySetError {
+		if (mUnit==null) {
+			mUnit = unit;
+			if (unit!=null) {
+				Globals.debug(String.format("Unit of parameter %d (%s) set to %s",mParameterNumber,mName,mUnit.toString()));
+			}
+		} else if (unit!=null) {
+			if (!mUnit.equals(unit)) {
+				throw new UnitAlreadySetError(this);
+			}
+		}
+	}
+
 
 }

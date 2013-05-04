@@ -43,7 +43,7 @@ public class DimAnalyser {
 				try {
 					interpreter.interpretStatements();
 				} catch (Exception e) {
-					System.err.println(String.format("Error in %s at line %d: %s",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber(),e.getMessage()));
+					Globals.getInstance().errorMessage(e.getMessage());
 					if (!(e instanceof InterpretationError)) {
 						e.printStackTrace();
 					}

@@ -17,6 +17,10 @@
 
 package com.dimanalyser.variablemanager;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -95,25 +99,48 @@ public class VariableManager {
 			if (mScopes.containsKey(name)) {
 				mCurrentScope.addInheritance(new Inheritance(mScopes.get(name),inheritanceLevel));
 			} else {
-				throw new ScopeNotFoundError(name);
+				Scope s = loadScope(name);
+				mScopes.put(name, s);
+				mCurrentScope.addInheritance(new Inheritance(s,inheritanceLevel));
 			}
 		}
+		
 		
 		/**
 		 * Leave the definition body of the current scope
 		 * @throws NotInAnyScopeError
 		 */
 		public void leaveScope() throws NotInAnyScopeError {
-			// TODO store scope to file
 			try {
 				Globals.leaveDebugLevel();
 				Globals.debug(String.format("Leaving scope %s", mCurrentScope.getName()));
 				mCurrentScope = mScopeWalk.pop();
+				if (mScopeWalk.size()==0) {
+					saveScopes();
+				}
 			} catch(Exception e) {
 				throw new NotInAnyScopeError();
 			}
 		}
 		
+		/**
+		 * Save scopes to disc for Makefile-type usage
+		 */
+		private void saveScopes() {
+			// TODO Save scopes
+		}
+
+		/**
+		 * Read saved scope in temporary directory
+		 * 
+		 * @param name name of scope to be read
+		 * @throws ScopeNotFoundError 
+		 */
+		private Scope loadScope(String name) throws ScopeNotFoundError {
+			// TODO load scopes
+			throw new ScopeNotFoundError(name);
+		}
+
 		/**
 		 * Add an instance to the currently interpreted scope
 		 * 

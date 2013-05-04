@@ -65,6 +65,12 @@ CONTAINS
     END SUBROUTINE
 
     SUBROUTINE test_no_parameters()
+        REAL :: energy !U(J)
+        REAL :: mass ! U(kg)
+        REAL :: velocity
+
+        energy = 0.5*mass*velocity**2
+
     END SUBROUTINE
 
     SUBROUTINE test_no_parameters_nobraces

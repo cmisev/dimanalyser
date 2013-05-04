@@ -18,6 +18,7 @@
 package com.dimanalyser.variablemanager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,6 +138,10 @@ public class Scope {
 	 */
 	public Instance getInstance(String name) throws InstanceNotFoundError {
 		return getInstance(name, InheritanceLevel.SCOPE_PUBLIC);
+	}
+	
+	public Collection<Instance> getInstances() {
+		return mInstances.values();
 	}
 
 

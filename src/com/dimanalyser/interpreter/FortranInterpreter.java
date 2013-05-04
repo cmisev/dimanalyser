@@ -34,10 +34,12 @@ import com.dimanalyser.errors.UnitAlreadySetError;
 import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
 import com.dimanalyser.errors.UnitsDontMatchError;
 import com.dimanalyser.variablemanager.FunctionInstance;
+import com.dimanalyser.variablemanager.ISetUnitCallback;
 import com.dimanalyser.variablemanager.InheritanceLevel;
 import com.dimanalyser.variablemanager.Instance;
 import com.dimanalyser.variablemanager.PhysicalUnit;
 import com.dimanalyser.variablemanager.StackElement;
+import com.dimanalyser.variablemanager.UnitsMatchable;
 import com.dimanalyser.variablemanager.VariableInstance;
 
 public class FortranInterpreter extends Interpreter {
@@ -305,7 +307,7 @@ public class FortranInterpreter extends Interpreter {
 				declareInstance(variableList.get(i),InheritanceLevel.SCOPE_PUBLIC,getUnitFromBuffer(variableList.size()));
 			}
 		} else if (instructions.startsWith("CALL ")) {
-			checkUnits(instructions.substring(5));
+			checkUnits(instructions.substring(5),false);
 		} else if (instructions.startsWith("DO ")) {
 			mVariableManager.enterScope(String.format("DO_%s:%d",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber()), InheritanceLevel.SCOPE_PUBLIC);
 			if (instructions.startsWith("DO WHILE ") || instructions.startsWith("DO WHILE(")) {
@@ -316,11 +318,11 @@ public class FortranInterpreter extends Interpreter {
 		} else if (instructions.startsWith("IF(") || instructions.startsWith("IF ")) {
 			if (instructions.endsWith("THEN")) {
 				mVariableManager.enterScope(String.format("IF_%s:%d",Globals.getInstance().getCurrentFilename(),Globals.getInstance().getLineNumber()), InheritanceLevel.SCOPE_PUBLIC);
-				checkUnits(instructions.substring(2,instructions.length()-4));
+				checkUnits(instructions.substring(2,instructions.length()-4),true);
 			} else {
 				int start = mFortranParser.getInterpretedIndex(instructions, "(");
 				int end = mFortranParser.getInterpretedIndex(instructions, ")",start+1);
-				checkUnits(instructions.substring(start+1,end));
+				checkUnits(instructions.substring(start+1,end),true);
 				interpredInstructions(instructions.substring(end+1));
 			}
 		} else if (instructions.startsWith("ELSE")) {
@@ -346,7 +348,7 @@ public class FortranInterpreter extends Interpreter {
 					interpredInstructions(instructions.substring(k));
 				}
 			} else {
-				checkUnits(instructions);
+				checkUnits(instructions,true);
 			}
 		}
 	}
@@ -394,6 +396,7 @@ public class FortranInterpreter extends Interpreter {
 	 * not yet declared.
 	 * 
 	 * @param expression the expression to check
+	 * @param warnIfUnitNotDefined whether to warn when the unit of the expression is not defined
 	 * @throws UnbalancedBracesError
 	 * @throws ExponentNotScalarError
 	 * @throws InstanceNotFoundError
@@ -403,25 +406,112 @@ public class FortranInterpreter extends Interpreter {
 	 * @throws UnitDeclarationsDontMatchError 
 	 * @throws UnableToMatchUnitsError 
 	 */
-	private void checkUnits(String expression) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError, UnitDeclarationsDontMatchError, UnableToMatchUnitsError {
+	private void checkUnits(String expression,boolean warnIfUnitNotDefined) throws UnbalancedBracesError, ExponentNotScalarError, InstanceNotFoundError, UnitsDontMatchError, UnitAlreadySetError, InstanceExistsError, UnitDeclarationsDontMatchError, UnableToMatchUnitsError {
 		// TODO maybe move to ExpressionParser, handle operations with interfaces?
 		List<StackElement> expr = mFortranParser.parseExpression(expression.trim());
 		Stack<StackElement> stack = new Stack<StackElement>();
 		
 		for(int k =0; k<expr.size(); k++) {
-			StackElement s = expr.get(k);
+			final StackElement s = expr.get(k);
 			if (s.equals("*")) {
-				StackElement rhs = stack.pop();
-				StackElement lhs = stack.pop();
-				stack.push(new StackElement(String.format("%s*%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.product(lhs.getUnit(), rhs.getUnit())));
+				final StackElement rhs = stack.pop();
+				final StackElement lhs = stack.pop();
+				if (lhs.getUnit() == null && rhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s*%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								throw new UnableToMatchUnitsError(lhs, rhs, s.getExpression());
+							}
+						}
+					));
+				} else if (lhs.getUnit()!=null && rhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s*%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								rhs.setUnit(PhysicalUnit.fraction(unit, lhs.getUnit()),origin);
+							}
+						}
+					));
+				} else if (lhs.getUnit()==null && rhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s*%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								rhs.setUnit(PhysicalUnit.fraction(unit, rhs.getUnit()),origin);
+							}
+						}
+					));
+				} else {
+					stack.push(new StackElement(String.format("%s*%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.product(lhs.getUnit(), rhs.getUnit())));
+				}
 			} else if (s.equals("/")) {
-				StackElement rhs = stack.pop();
-				StackElement lhs = stack.pop();
-				stack.push(new StackElement(String.format("%s/%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.fraction(lhs.getUnit(), rhs.getUnit())));
+				final StackElement rhs = stack.pop();
+				final StackElement lhs = stack.pop();
+				if (lhs.getUnit() == null && rhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s/%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								throw new UnableToMatchUnitsError(lhs, rhs, s.getExpression());
+							}
+						}
+					));
+				} else if (lhs.getUnit()!=null && rhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s/%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								rhs.setUnit(PhysicalUnit.fraction(lhs.getUnit(),unit),origin);
+							}
+						}
+					));
+				} else if (lhs.getUnit()==null && rhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s/%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								rhs.setUnit(PhysicalUnit.product(unit, rhs.getUnit()),origin);
+							}
+						}
+					));
+				} else {
+					stack.push(new StackElement(String.format("%s/%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.fraction(lhs.getUnit(), rhs.getUnit())));
+				}
 			} else if (s.equals("**")) {
-				StackElement rhs = stack.pop();
-				StackElement lhs = stack.pop();
-				stack.push(new StackElement(String.format("%s**%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.power(lhs.getUnit(), rhs.getUnit())));
+				final StackElement rhs = stack.pop();
+				final StackElement lhs = stack.pop();
+				if (lhs.getUnit()==null) {
+					stack.push(new StackElement(
+						String.format("%s**%s", lhs.getExpression(), rhs.getExpression()),
+						new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								try {
+									lhs.setUnit(PhysicalUnit.power(unit,PhysicalUnit.fraction(Globals.getInstance().getUnitless(), rhs.getUnit())),origin);
+								} catch (ExponentNotScalarError e) {
+									throw new UnableToMatchUnitsError(lhs,rhs,s.getExpression());
+								}
+							}
+						}
+					));
+				} else {
+					stack.push(new StackElement(String.format("%s**%s", lhs.getExpression(), rhs.getExpression()), PhysicalUnit.power(lhs.getUnit(), rhs.getUnit())));
+				}
 			} else if (s.equals("+") || s.equals("-") || 
 					s.equals(".LE.") || s.equals(".LT.") || 
 					s.equals(".GT.") || s.equals(".GE.") || 
@@ -432,23 +522,42 @@ public class FortranInterpreter extends Interpreter {
 				
 				if (stack.lastElement().equals(",")) {
 					int elementcount = stack.pop().getOperandsCount();
-					StackElement reference = stack.pop();
-					String listexpression = reference.getExpression();
-					
 					for (int j=1; j<elementcount; j++) {
-						StackElement current = stack.pop();
-						setEqualUnits(reference, current, "lists");
-						listexpression = current.getExpression() + "," + listexpression;
+						final StackElement list = stack.pop();
+						final StackElement listelement = stack.pop();
+						setEqualUnits(listelement, list, "list");
+						try {
+							setEqualUnits(listelement, list, ",");
+							stack.push(new StackElement(String.format("%s,%s", listelement.getExpression(), ",", list.getExpression()),list.getUnit()));
+						} catch(UnableToMatchUnitsError me) {
+							stack.push(new StackElement(String.format("%s,%s", listelement.getExpression(), ",", list.getExpression()),new ISetUnitCallback() {
+								@Override
+								public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+										throws UnableToMatchUnitsError, UnitAlreadySetError {
+									list.setUnit(unit, origin);
+									listelement.setUnit(unit, origin);
+								}
+							}));
+						}
 					}
-					stack.push(new StackElement(listexpression,reference.getUnit()));
 				}
 				
-				StackElement rhs = stack.pop();
-				StackElement lhs = stack.pop();
-				
-				setEqualUnits(lhs, rhs, s.getExpression());
+				final StackElement rhs = stack.pop();
+				final StackElement lhs = stack.pop();
+				try {
+					setEqualUnits(lhs, rhs, s.getExpression());
+					stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),lhs.getUnit()));
+				} catch(UnableToMatchUnitsError me) {
+					stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),new ISetUnitCallback() {
+						@Override
+						public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+								throws UnableToMatchUnitsError, UnitAlreadySetError {
+							rhs.setUnit(unit, origin);
+							lhs.setUnit(unit, origin);
+						}
+					}));
+				}
 			
-				stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),lhs.getUnit()));
 			} else if (s.equals("(")) {
 				stack.lastElement().setExpression((String.format("(%s)", stack.lastElement().getExpression())));
 			} else if (s.equals(",")) {
@@ -474,8 +583,15 @@ public class FortranInterpreter extends Interpreter {
 							stack.pop();
 						}
 						try {
-							Instance instance = mVariableManager.getInstance(s.getExpression().trim());
+							final Instance instance = mVariableManager.getInstance(s.getExpression().trim());
 							s.setUnit(instance.getUnit());
+							s.setUnitSetCallback(new ISetUnitCallback() {
+								@Override
+								public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+										throws UnableToMatchUnitsError, UnitAlreadySetError {
+									instance.setUnit(unit,origin);
+								}
+							});
 							if (instance instanceof FunctionInstance) {
 								FunctionInstance fi = (FunctionInstance) instance;
 								for (int i=0; i<parameterCount; i++) {
@@ -501,12 +617,24 @@ public class FortranInterpreter extends Interpreter {
 							s.setExpression(s.getExpression()+"("+parameters+")");
 						}
 					} else {
-						Instance instance = mVariableManager.getInstance(s.getExpression().trim());
+						final Instance instance = mVariableManager.getInstance(s.getExpression().trim());
 						s.setUnit(instance.getUnit());
+						s.setUnitSetCallback(new ISetUnitCallback() {
+							@Override
+							public void setUnit(PhysicalUnit unit, UnitsMatchable origin)
+									throws UnableToMatchUnitsError, UnitAlreadySetError {
+								instance.setUnit(unit,origin);
+							}
+						});
 					}
 				}
 				stack.push(s);
 			}
 		}
+		
+		if (warnIfUnitNotDefined && stack.lastElement().getUnit()==null) {
+			Globals.getInstance().warnMessage("The expression seems to have no unit");
+		}
 	}
+	
 }

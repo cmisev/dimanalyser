@@ -18,6 +18,7 @@ package com.dimanalyser.variablemanager;
 
 
 import com.dimanalyser.common.Globals;
+import com.dimanalyser.errors.UnableToMatchUnitsError;
 import com.dimanalyser.errors.UnitAlreadySetError;
 
 /**
@@ -54,8 +55,9 @@ abstract public class UnitsMatchable {
 	 * 
 	 * @param unit the unit to be set.
 	 * @throws UnitAlreadySetError
+	 * @throws UnableToMatchUnitsError 
 	 */
-	public abstract void setUnit(PhysicalUnit unit) throws UnitAlreadySetError;
+	public abstract void setUnit(PhysicalUnit unit) throws UnitAlreadySetError, UnableToMatchUnitsError;
 
 	/**
 	 * Set the physical unit of the instance and keep track of the origin of the implicit unit definition.
@@ -63,8 +65,9 @@ abstract public class UnitsMatchable {
 	 * @param unit the unit to be set.
 	 * @param origin the instance leading to the implicit unit definition, may be null
 	 * @throws UnitAlreadySetError
+	 * @throws UnableToMatchUnitsError 
 	 */
-	public void setUnit(PhysicalUnit unit, UnitsMatchable origin) throws UnitAlreadySetError {
+	public void setUnit(PhysicalUnit unit, UnitsMatchable origin) throws UnitAlreadySetError, UnableToMatchUnitsError {
 		setUnit(unit);
 		mUnitDefinedAtLineNumber = Globals.getInstance().getLineNumber();
 		mUnitDefinedInFileName = Globals.getInstance().getCurrentFilename();
