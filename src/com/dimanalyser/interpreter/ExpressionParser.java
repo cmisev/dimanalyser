@@ -23,6 +23,7 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 
 import com.dimanalyser.errors.UnbalancedBracesError;
+import com.dimanalyser.variablemanager.StackElement;
 
 /**
  * A generic Parser of mathematical expressions used by the interpreter. Each programming language

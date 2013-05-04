@@ -86,7 +86,7 @@ public class VariableManagerTest {
 			assertEquals("variable instance grad_B, unit not yet determined",vm.getInstance("grad_B").toString());
 
 			vm.addInstance(new VariableInstance("grad_B",InheritanceLevel.SCOPE_PUBLIC,Globals.getInstance().getUnit("N")));
-			assertEquals("variable instance grad_B [m kg s^-2]",vm.getInstance("grad_B").toString());
+			assertEquals("variable instance [grad_B]=m kg s^-2",vm.getInstance("grad_B").toString());
 			
 
 			

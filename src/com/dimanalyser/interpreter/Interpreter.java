@@ -33,7 +33,8 @@ import com.dimanalyser.errors.UnitDeclarationsDontMatchError;
 import com.dimanalyser.errors.UnitsDontMatchError;
 import com.dimanalyser.variablemanager.Instance;
 import com.dimanalyser.variablemanager.PhysicalUnit;
-import com.dimanalyser.variablemanager.VariableInstance;
+import com.dimanalyser.variablemanager.StackElement;
+import com.dimanalyser.variablemanager.UnitsMatchable;
 import com.dimanalyser.variablemanager.VariableManager;
 
 /**
@@ -197,10 +198,10 @@ public abstract class Interpreter {
 	 * @throws UnitAlreadySetError
 	 * @throws UnitsDontMatchError 
 	 */
-	protected void setEqualUnits(StackElement lhs, StackElement rhs, StackElement s) throws UnableToMatchUnitsError, UnitAlreadySetError, UnitsDontMatchError {
+	protected void setEqualUnits(UnitsMatchable lhs, UnitsMatchable rhs, String s) throws UnableToMatchUnitsError, UnitAlreadySetError, UnitsDontMatchError {
 		try {
 			if (rhs.getUnit()==null && lhs.getUnit()==null) {
-				throw new UnableToMatchUnitsError(lhs,rhs);
+				throw new UnableToMatchUnitsError(lhs,rhs,s);
 			} else if (rhs.getUnit()==null) {
 				rhs.setUnit(lhs.getUnit());
 				
@@ -220,89 +221,20 @@ public abstract class Interpreter {
 				}
 				mVariableManager.getInstance(lhs.getExpression().trim()).setUnit(rhs.getUnit(),origin);
 			} else {
+				try {
+					rhs = mVariableManager.getInstance(rhs.getExpression().trim());
+				} catch (InstanceNotFoundError inf) {
+				}
+				try {
+					lhs = mVariableManager.getInstance(lhs.getExpression().trim());
+				} catch (InstanceNotFoundError inf) {
+				}
 				if (!lhs.getUnit().equals(rhs.getUnit())) {
 					throw new UnitsDontMatchError(lhs, rhs, s);
 				}
 			}
 		} catch (InstanceNotFoundError e) {
-			throw new UnableToMatchUnitsError(lhs,rhs);
-		}
-	}
-	
-	/**
-	 * Private helper method to set units of stack elements equal if a list implies equal units
-	 * 
-	 * @param reference first operand of the operation
-	 * @param current second operand of the operation
-	 * @param s the operator
-	 * @throws UnableToMatchUnitsError
-	 * @throws UnitAlreadySetError
-	 * @throws UnitsDontMatchError 
-	 */
-	protected void setEqualUnits(StackElement reference, StackElement current, int j) throws UnableToMatchUnitsError, UnitAlreadySetError, UnitsDontMatchError {
-		try {
-			if (current.getUnit()==null && reference.getUnit()==null) {
-				throw new UnableToMatchUnitsError(reference,current);
-			} else if (current.getUnit()==null) {
-				current.setUnit(reference.getUnit());
-				
-				Instance origin = null;
-				try {
-					origin = mVariableManager.getInstance(reference.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				mVariableManager.getInstance(current.getExpression().trim()).setUnit(reference.getUnit(),origin);
-				
-			} else if (reference.getUnit()==null) {
-				reference.setUnit(current.getUnit());
-				Instance origin = null;
-				try {
-					origin = mVariableManager.getInstance(current.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				mVariableManager.getInstance(reference.getExpression().trim()).setUnit(current.getUnit(),origin);
-			} else {
-				if (!reference.getUnit().equals(current.getUnit())) {
-					throw new UnitsDontMatchError(reference, current, j);
-				}
-			}
-		} catch (InstanceNotFoundError e) {
-			throw new UnableToMatchUnitsError(reference,current);
-		}
-	}
-	
-	/**
-	 * Private helper method to set units of stack elements equal if a functions parameter imply equal units
-	 * 
-	 * @param reference first operand of the operation
-	 * @param current second operand of the operation
-	 * @param s the operator
-	 * @throws UnableToMatchUnitsError
-	 * @throws UnitAlreadySetError
-	 * @throws UnitsDontMatchError 
-	 */
-	protected void setEqualUnits(StackElement required, VariableInstance parameter, StackElement function, int j) throws UnableToMatchUnitsError, UnitAlreadySetError, UnitsDontMatchError {
-		try {
-			if (required.getUnit()==null && parameter.getUnit()==null) {
-				throw new UnableToMatchUnitsError(required,j,function);
-			} else if (required.getUnit()==null) {
-				required.setUnit(parameter.getUnit());
-				mVariableManager.getInstance(required.getExpression().trim()).setUnit(parameter.getUnit(),parameter);
-			} else if (parameter.getUnit()==null) {
-				parameter.setUnit(required.getUnit());
-				Instance origin = null;
-				try {
-					origin = mVariableManager.getInstance(required.getExpression().trim());
-				} catch (InstanceNotFoundError inf) {
-				}
-				parameter.setUnit(required.getUnit(),origin);
-			} else {
-				if (!parameter.getUnit().equals(required.getUnit())) {
-					throw new UnitsDontMatchError(j, required, parameter.getUnit(), function);
-				}
-			}
-		} catch (InstanceNotFoundError e) {
-			throw new UnableToMatchUnitsError(required,j,function);
+			throw new UnableToMatchUnitsError(lhs,rhs,s);
 		}
 	}
 }

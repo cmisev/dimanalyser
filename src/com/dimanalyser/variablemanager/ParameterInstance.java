@@ -26,13 +26,12 @@ import com.dimanalyser.errors.UnitAlreadySetError;
  * @author Cyril Misev <c.misev@gmail.com>
  *
  */
-public class VariableInstance extends Instance {
+public class ParameterInstance extends VariableInstance {
 
 	/**
-	 * The unit of the variable, may be not yet defined, in this case this field is <pre>null</pre>. It may be implicitly defined at
-	 * a later stage when during an operation with a known unit the operation expects the units to be equal. 
+	 * The number of the parameter
 	 */
-	PhysicalUnit mUnit;
+	private int mParameterNumber;
 	
 	/**
 	 * Main constructor in case the unit of the variable is known at the creation of the variable instance (explicit unit declaration)
@@ -40,16 +39,11 @@ public class VariableInstance extends Instance {
 	 * @param name the name of the variable instance
 	 * @param accessLevel Access level of the instance (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
 	 * @param unit the unit of the variable.
+	 * @param parameterNumber the number of the parameter
 	 */
-	public VariableInstance(String name, int accessLevel, PhysicalUnit unit) {
-		super(name, accessLevel);
-		if (unit == null) {
-			mUnit = null;
-		} else {
-			mUnitDefinedAtLineNumber = Globals.getInstance().getLineNumber();
-			mUnitDefinedInFileName = Globals.getInstance().getCurrentFilename();
-			mUnit = unit;
-		}
+	public ParameterInstance(String name, int accessLevel, PhysicalUnit unit, int parameterNumber) {
+		super(name, accessLevel,unit);
+		mParameterNumber = parameterNumber;
 	}
 
 	/**
@@ -57,9 +51,11 @@ public class VariableInstance extends Instance {
 	 * 
 	 * @param name the name of the variable instance
 	 * @param accessLevel Access level of the instance (private/public/protected, see {@link InheritanceLevel InheritanceLevel})
+	 * @param parameterNumber the number of the parameter
 	 */
-	public VariableInstance(String name, int accessLevel) {
-		this(name, accessLevel, null);
+	public ParameterInstance(String name, int accessLevel, int parameterNumber) {
+		super(name, accessLevel);
+		mParameterNumber = parameterNumber;
 	}
 
 	/**
@@ -68,42 +64,19 @@ public class VariableInstance extends Instance {
 	@Override
 	public String toString() {
 		if (mUnit!=null) {			
-			return String.format("variable instance [%s]=%s", mName, mUnit.toString());
+			return String.format("parameter %d [%s]=%s", mParameterNumber, mName, mUnit.toString());
 		} else {
-			return String.format("variable instance %s, unit not yet determined", getName());
+			return String.format("parameter %d (%s), unit not yet determined", mParameterNumber, getName());
 		}
 	}
 	
 	/**
-	 * Set the physical unit of the instance.
+	 * Set the name of the variable instance.
 	 * 
-	 * @param unit the unit to be set.
-	 * @throws UnitAlreadySetError
+	 * @param name the name to set
 	 */
-	@Override
-	public void setUnit(PhysicalUnit unit) throws UnitAlreadySetError {
-		if (mUnit==null) {
-			mUnit = unit;
-			if (unit!=null) {
-				Globals.debug(String.format("Unit of variable instance %s set to %s",mName,mUnit.toString()));
-			}
-		} else if (unit!=null) {
-			if (!mUnit.equals(unit)) {
-				throw new UnitAlreadySetError(this);
-			}
-		}
+	public void setName(String name) {
+		mName = name;
 	}
-
-	
-	/**
-	 * Get the physical unit of the instance.
-	 * 
-	 * @return the physical unit of the instance
-	 */
-	@Override
-	public PhysicalUnit getUnit() {
-		return mUnit;
-	}
-	
 
 }

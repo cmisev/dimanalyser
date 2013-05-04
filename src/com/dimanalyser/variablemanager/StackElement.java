@@ -15,9 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.dimanalyser.interpreter;
+package com.dimanalyser.variablemanager;
 
-import com.dimanalyser.variablemanager.PhysicalUnit;
 
 /**
  * Expression stack element. Contains a chunk of an expression, either raw or already interpreted,
@@ -26,7 +25,7 @@ import com.dimanalyser.variablemanager.PhysicalUnit;
  * @author Cyril Misev <c.misev@gmail.com>
  *
  */
-public class StackElement {
+public class StackElement extends UnitsMatchable {
 
 	/**
 	 * Human-readable string of the expression
@@ -95,6 +94,7 @@ public class StackElement {
 	 * Set the unit resulting from the expression
 	 * @param unit the unit resulting from the expression
 	 */
+	@Override
 	public void setUnit(PhysicalUnit unit) {
 		mUnit = unit;
 	}
@@ -127,7 +127,12 @@ public class StackElement {
 	 * <pre>toString()</pre> implementation for purposes of debugging and identification
 	 */
 	public String toString() {
-		return mExpression;
+		if (mUnit==null) {
+			return String.format("expression %s, unit not yet defined", mExpression.trim());
+		} else {
+			return String.format("expression [%s]=%s", mExpression.trim(), mUnit.toString());
+		}
+			
 	}
 	
 	/**

@@ -22,7 +22,8 @@ END SUBROUTINE
 
 PROGRAM test
 
-    REAL :: xmin,xmax,dx ! U(m)
+    REAL :: xmin,dx ! U(m)
+    REAL :: xmax
     REAL :: x1,x2, x3,x4
     REAL :: mass,time ! U(kg) U(s)
 

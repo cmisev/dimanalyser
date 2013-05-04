@@ -1,53 +1,54 @@
    4 Entering scope BLOCK_res/test/fortran/testfortran.f90:4
-   8     Adding variable instance A [kg]
-   8     Adding variable instance B [kg]
-   8     Adding variable instance C [kg]
+   8     Adding variable instance [A]=kg
+   8     Adding variable instance [B]=kg
+   8     Adding variable instance [C]=kg
   10 Leaving scope BLOCK_res/test/fortran/testfortran.f90:4
   15 Adding function instance TEST_BEFORE_CALL_DPU [1]
   15 Entering scope TEST_BEFORE_CALL_DPU
   16     Unit of variable instance A set to m
-  16     Adding variable instance A [m]
+  16     Adding variable instance [A]=m
   16     Unit of variable instance B set to kg
-  16     Adding variable instance B [kg]
+  16     Adding variable instance [B]=kg
   16     Unit of variable instance C set to s
-  16     Adding variable instance C [s]
+  16     Adding variable instance [C]=s
   18 Leaving scope TEST_BEFORE_CALL_DPU
   23 Entering scope PROGRAM
-  25     Adding variable instance XMIN [m]
-  25     Adding variable instance XMAX [m]
-  25     Adding variable instance DX [m]
-  26     Adding variable instance X1, unit not yet determined
-  26     Adding variable instance X2, unit not yet determined
-  26     Adding variable instance X3, unit not yet determined
-  26     Adding variable instance X4, unit not yet determined
-  27     Adding variable instance MASS [kg]
-  27     Adding variable instance TIME [s]
-  31     Entering scope DO_res/test/fortran/testfortran.f90:31
-  31         Unit of variable instance X1 set to m
-  33         Unit of variable instance X2 set to m
-  34         Unit of variable instance X3 set to m
-  36         Entering scope DO_res/test/fortran/testfortran.f90:36
-  39         Leaving scope DO_res/test/fortran/testfortran.f90:36
-  41         Adding function instance TEST_AFTER_CALL_UPU, return unit not yet determined
-  43         Entering scope IF_res/test/fortran/testfortran.f90:43
-  44             Unit of variable instance X4 set to m
-  45         Leaving scope IF_res/test/fortran/testfortran.f90:43
-  45         Entering scope IF_res/test/fortran/testfortran.f90:45
-  46         Leaving scope IF_res/test/fortran/testfortran.f90:45
-  47     Leaving scope DO_res/test/fortran/testfortran.f90:31
-  51     Adding function instance TEST_AFTER_CALL_UPU [1]
-  51     Entering scope TEST_AFTER_CALL_UPU
-  52         Unit of variable instance A set to kg
-  52         Adding variable instance A [kg]
-  52         Unit of variable instance B set to kg
-  52         Adding variable instance B [kg]
-  52         Unit of variable instance C set to kg
-  52         Adding variable instance C [kg]
-  53     Leaving scope TEST_AFTER_CALL_UPU
-  55     Adding function instance TEST_NO_PARAMETERS [1]
-  55     Entering scope TEST_NO_PARAMETERS
-  56     Leaving scope TEST_NO_PARAMETERS
-  58     Adding function instance TEST_NO_PARAMETERS_NOBRACES [1]
-  58     Entering scope TEST_NO_PARAMETERS_NOBRACES
-  59     Leaving scope TEST_NO_PARAMETERS_NOBRACES
-  61 Leaving scope PROGRAM
+  25     Adding variable instance [XMIN]=m
+  25     Adding variable instance [DX]=m
+  26     Adding variable instance XMAX, unit not yet determined
+  27     Adding variable instance X1, unit not yet determined
+  27     Adding variable instance X2, unit not yet determined
+  27     Adding variable instance X3, unit not yet determined
+  27     Adding variable instance X4, unit not yet determined
+  28     Adding variable instance [MASS]=kg
+  28     Adding variable instance [TIME]=s
+  32     Entering scope DO_res/test/fortran/testfortran.f90:32
+  32         Unit of variable instance XMAX set to m
+  32         Unit of variable instance X1 set to m
+  34         Unit of variable instance X2 set to m
+  35         Unit of variable instance X3 set to m
+  37         Entering scope DO_res/test/fortran/testfortran.f90:37
+  40         Leaving scope DO_res/test/fortran/testfortran.f90:37
+  42         Adding function instance TEST_AFTER_CALL_UPU, return unit not yet determined
+  44         Entering scope IF_res/test/fortran/testfortran.f90:44
+  45             Unit of variable instance X4 set to m
+  46         Leaving scope IF_res/test/fortran/testfortran.f90:44
+  46         Entering scope IF_res/test/fortran/testfortran.f90:46
+  47         Leaving scope IF_res/test/fortran/testfortran.f90:46
+  48     Leaving scope DO_res/test/fortran/testfortran.f90:32
+  52     Adding function instance TEST_AFTER_CALL_UPU [1]
+  52     Entering scope TEST_AFTER_CALL_UPU
+  53         Unit of variable instance A set to kg
+  53         Adding variable instance [A]=kg
+  53         Unit of variable instance B set to kg
+  53         Adding variable instance [B]=kg
+  53         Unit of variable instance C set to kg
+  53         Adding variable instance [C]=kg
+  54     Leaving scope TEST_AFTER_CALL_UPU
+  56     Adding function instance TEST_NO_PARAMETERS [1]
+  56     Entering scope TEST_NO_PARAMETERS
+  57     Leaving scope TEST_NO_PARAMETERS
+  59     Adding function instance TEST_NO_PARAMETERS_NOBRACES [1]
+  59     Entering scope TEST_NO_PARAMETERS_NOBRACES
+  60     Leaving scope TEST_NO_PARAMETERS_NOBRACES
+  62 Leaving scope PROGRAM

@@ -37,6 +37,7 @@ import com.dimanalyser.variablemanager.FunctionInstance;
 import com.dimanalyser.variablemanager.InheritanceLevel;
 import com.dimanalyser.variablemanager.Instance;
 import com.dimanalyser.variablemanager.PhysicalUnit;
+import com.dimanalyser.variablemanager.StackElement;
 import com.dimanalyser.variablemanager.VariableInstance;
 
 public class FortranInterpreter extends Interpreter {
@@ -436,7 +437,7 @@ public class FortranInterpreter extends Interpreter {
 					
 					for (int j=1; j<elementcount; j++) {
 						StackElement current = stack.pop();
-						setEqualUnits(reference, current, elementcount-j);
+						setEqualUnits(reference, current, "lists");
 						listexpression = current.getExpression() + "," + listexpression;
 					}
 					stack.push(new StackElement(listexpression,reference.getUnit()));
@@ -445,7 +446,7 @@ public class FortranInterpreter extends Interpreter {
 				StackElement rhs = stack.pop();
 				StackElement lhs = stack.pop();
 				
-				setEqualUnits(lhs, rhs, s);
+				setEqualUnits(lhs, rhs, s.getExpression());
 			
 				stack.push(new StackElement(String.format("%s%s%s", lhs.getExpression(), s.getExpression(), rhs.getExpression()),lhs.getUnit()));
 			} else if (s.equals("(")) {
@@ -478,7 +479,7 @@ public class FortranInterpreter extends Interpreter {
 							if (instance instanceof FunctionInstance) {
 								FunctionInstance fi = (FunctionInstance) instance;
 								for (int i=0; i<parameterCount; i++) {
-									setEqualUnits(stack.get(stack.size()-parameterCount+i), fi.getParameter(i), s, i+1);
+									setEqualUnits(stack.get(stack.size()-parameterCount+i), fi.getParameter(i), s.toString());
 								}
 							}
 						} catch (InstanceNotFoundError inf) {

@@ -40,7 +40,7 @@ public class FunctionInstance extends Instance {
 	/**
 	 * List of VariableInstances holding the instances the object is depending on
 	 */
-	List<VariableInstance> mParameters;
+	List<ParameterInstance> mParameters;
 	
 	/**
 	 * Main constructor, creating a FunctionInstance with a known unit
@@ -52,7 +52,7 @@ public class FunctionInstance extends Instance {
 	public FunctionInstance(String name, int accessLevel, PhysicalUnit returnUnit) {
 		super(name, accessLevel);
 		mReturnUnit = returnUnit;
-		mParameters = new ArrayList<VariableInstance>();
+		mParameters = new ArrayList<ParameterInstance>();
 	}
 
 	/**
@@ -68,6 +68,7 @@ public class FunctionInstance extends Instance {
 	/**
 	 * <pre>toString()</pre> implementation for identification/debugging purposes
 	 */
+	@Override
 	public String toString() {
 		// TODO Better function instance toString implementation
 		if (mReturnUnit!=null) {			
@@ -85,7 +86,7 @@ public class FunctionInstance extends Instance {
 	 * @param unit the unit of the parameter
 	 */
 	public void addParameter(String name, PhysicalUnit unit) {
-		mParameters.add(new VariableInstance(name, InheritanceLevel.SCOPE_PROTECTED, unit));
+		mParameters.add(new ParameterInstance(name, InheritanceLevel.SCOPE_PROTECTED, unit,mParameters.size()+1));
 	}
 	
 
@@ -141,9 +142,9 @@ public class FunctionInstance extends Instance {
 	 * @return the corresponding variable instance representing the parameter
 	 * @throws InstanceNotFoundError
 	 */
-	public VariableInstance getParameter(String name) throws InstanceNotFoundError {
+	public ParameterInstance getParameter(String name) throws InstanceNotFoundError {
 		
-		for (VariableInstance instance : mParameters) {
+		for (ParameterInstance instance : mParameters) {
 			if (instance.getName().equals(name)) {
 				return instance;
 			}
@@ -174,5 +175,6 @@ public class FunctionInstance extends Instance {
 			throw new UnitAlreadySetError(this);
 		}
 	}
+
 
 }
