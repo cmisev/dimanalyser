@@ -1,5 +1,22 @@
 Error in res/test/fortran/testfortran.f90 at line 6: Number of Unit declarations don't match
 Error in res/test/fortran/testfortran.f90 at line 7: Number of Unit declarations don't match
-Error in res/test/fortran/testfortran.f90 at line 30: Units of expression X1, unit not yet defined and expression X2, unit not yet defined at = operation can't be matched
-Error in res/test/fortran/testfortran.f90 at line 37: Units don't match at .GT. operation. variable instance [X2]=m should be expression [0]=1 
-Error in res/test/fortran/testfortran.f90 at line 38: Number of Unit declarations don't match
+Error in res/test/fortran/testfortran.f90 at line 24: Units don't match at = operation. variable instance [B]=kg should be variable instance [F]=m
+  B Definition trace:
+    @ res/test/fortran/testfortran.f90: 16
+
+  F Definition trace:
+    @ res/test/fortran/testfortran.f90: 22 by E
+    @ res/test/fortran/testfortran.f90: 21 by D
+    @ res/test/fortran/testfortran.f90: 20 by A
+    @ res/test/fortran/testfortran.f90: 16
+
+Error in res/test/fortran/testfortran.f90 at line 39: Units of expression X1, unit not yet defined and expression X2, unit not yet defined at = operation can't be matched
+Error in res/test/fortran/testfortran.f90 at line 46: Units don't match at .GT. operation. variable instance [X2]=m should be expression [0]=1
+  X2 Definition trace:
+    @ res/test/fortran/testfortran.f90: 43 by X1
+    @ res/test/fortran/testfortran.f90: 41
+
+  0 Definition trace:
+    @ res/test/fortran/testfortran.f90: 46
+
+Error in res/test/fortran/testfortran.f90 at line 47: Number of Unit declarations don't match

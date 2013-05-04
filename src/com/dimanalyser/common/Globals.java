@@ -52,12 +52,13 @@ public final class Globals {
 	 * Basic unitless unit
 	 */
 	private PhysicalUnit mUnitless;
-	
+
 
 	/**
 	 * Name of currently processed file
 	 */
 	private String mFileName = "testfortran.f90";
+	
 	
 	/**
 	 * Line number of currently processed file
@@ -89,7 +90,6 @@ public final class Globals {
 	/**
 	 * Static method printing debug messages where wanted
 	 * @param message the message to be printed
-	 * @param depth a positive integer allowing for the creation of a hierarchy of the debug messages
 	 */
 	public static void debug(String message) {
 		System.out.println(String.format("%4d ",mInstance.getLineNumber()) + new String(new char[4*mInstance.mDebugDepth]).replace("\0", " ") + message);
@@ -97,7 +97,6 @@ public final class Globals {
 	
 	/**
 	 * Enter a new Debug level
-	 * @return the debug depth
 	 */
 	public static void enterDebugLevel() {
 		mInstance.mDebugDepth++;

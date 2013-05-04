@@ -124,9 +124,6 @@ public class FortranInterpreter extends Interpreter {
 	 * The core method of the interpreter. Called by the main program loop to interpret one or more lines (depending on whether the
 	 * statement is a one-line statement or extended to several lines, as decided by the concrete method itself).
 	 * 
-	 * @param linenumber the index in <pre>lines</pre> of the line to be interpreted.
-	 * @param lines all lines of the current file.
-	 * @return the next line index in <pre>lines</pre> to be read.
 	 * @throws UnableToMatchUnitsError 
 	 * @throws InterpretationError
 	 */

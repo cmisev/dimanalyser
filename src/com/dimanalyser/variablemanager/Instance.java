@@ -94,7 +94,7 @@ abstract public class Instance extends UnitsMatchable {
 	
 	@Override
 	public String getExpression() {
-		return toString();
+		return mName;
 	}
 
 

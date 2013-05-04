@@ -15,6 +15,15 @@ END BLOCK
 SUBROUTINE test_before_call_dpu(a,b,c)
     REAL, INTENT(IN) :: a,b,c ! U(m) U(kg) U(s)
 
+    REAL :: d,e,f,g,h
+
+    d = a
+    e = d
+    f = e
+
+    b = f
+
+
 END SUBROUTINE
 
 
@@ -51,6 +60,8 @@ CONTAINS
 
     SUBROUTINE test_after_call_upu(a,b,c)
         REAL :: a,b,c ! U(kg)
+
+        a = b**2/c
     END SUBROUTINE
 
     SUBROUTINE test_no_parameters()

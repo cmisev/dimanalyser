@@ -34,7 +34,7 @@ public class UnitsDontMatchError extends InterpretationError {
 
 	public UnitsDontMatchError(UnitsMatchable lhs, UnitsMatchable rhs,
 			String s) {
-		super(String.format("Units don't match at %s operation. %s should be %s ",s,lhs.toString(),rhs.toString()));
+		super(String.format("Units don't match at %s operation. %s should be %s\n  %s Definition trace:%s\n\n  %s Definition trace:%s\n",s,lhs.toString(),rhs.toString(),lhs.getExpression().trim(),lhs.definitionOriginTree(20),rhs.getExpression().trim(),rhs.definitionOriginTree(20)));
 	}
 
 }

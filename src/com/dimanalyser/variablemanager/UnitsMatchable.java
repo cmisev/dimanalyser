@@ -61,7 +61,7 @@ abstract public class UnitsMatchable {
 	 * Set the physical unit of the instance and keep track of the origin of the implicit unit definition.
 	 * 
 	 * @param unit the unit to be set.
-	 * @param instance the instance leading to the implicit unit definition, may be null
+	 * @param origin the instance leading to the implicit unit definition, may be null
 	 * @throws UnitAlreadySetError
 	 */
 	public void setUnit(PhysicalUnit unit, UnitsMatchable origin) throws UnitAlreadySetError {
@@ -74,9 +74,9 @@ abstract public class UnitsMatchable {
 	public String definitionOriginTree(int depth) {
 		if (depth>0) {
 			if (mUnitDefinedBy != null) {
-				return String.format("\n @ %s: %d by %s", mUnitDefinedInFileName, mUnitDefinedAtLineNumber, mUnitDefinedBy.definitionOriginTree(depth-1));
+				return String.format("\n    @ %s: %d by %s%s", mUnitDefinedInFileName, mUnitDefinedAtLineNumber, mUnitDefinedBy.getExpression(), mUnitDefinedBy.definitionOriginTree(depth-1));
 			} else {
-				return String.format("\n @ %s: %d", mUnitDefinedInFileName, mUnitDefinedAtLineNumber);
+				return String.format("\n    @ %s: %d", mUnitDefinedInFileName, mUnitDefinedAtLineNumber);
 			}
 		}
 		return "";

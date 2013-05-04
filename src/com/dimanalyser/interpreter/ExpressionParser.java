@@ -516,7 +516,7 @@ public class ExpressionParser {
 	 * Looks up and returns the position of the first occurrence from the left of <pre>needle</pre> in <pre>expression</pre>, 
 	 * while ignoring all occurrences surrounded by braces or by quotes.
 	 *  
-	 * @param expression the expression to be examined
+	 * @param string the expression to be examined
 	 * @param needle the string to be found in the expression
 	 * @return index of first occurrence in the expression from the left. <pre>expression.length()</pre> if <pre>needle</pre> is not found.
 	 * @throws UnbalancedBracesError
@@ -611,9 +611,8 @@ public class ExpressionParser {
 	 * Looks up and returns the position of the first occurrence from the right of <pre>needle</pre> in <pre>expression</pre>, 
 	 * while ignoring all occurrences surrounded by braces or by quotes.
 	 *  
-	 * @param expression the expression to be examined
+	 * @param string the expression to be examined
 	 * @param needle the string to be found in the expression
-	 * @return index of first occurrence in the expression from the right <pre>-1</pre> if <pre>needle</pre> is not found.
 	 * @throws UnbalancedBracesError
 	 */
 	public int getInterpretedIndexReverse(String string, String needle) throws UnbalancedBracesError {

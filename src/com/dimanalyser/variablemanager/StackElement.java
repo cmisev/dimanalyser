@@ -17,6 +17,8 @@
 
 package com.dimanalyser.variablemanager;
 
+import com.dimanalyser.common.Globals;
+
 
 /**
  * Expression stack element. Contains a chunk of an expression, either raw or already interpreted,
@@ -97,6 +99,8 @@ public class StackElement extends UnitsMatchable {
 	@Override
 	public void setUnit(PhysicalUnit unit) {
 		mUnit = unit;
+		mUnitDefinedAtLineNumber = Globals.getInstance().getLineNumber();
+		mUnitDefinedInFileName = Globals.getInstance().getCurrentFilename();
 	}
 	
 	/**
