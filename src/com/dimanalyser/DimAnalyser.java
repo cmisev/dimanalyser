@@ -32,28 +32,31 @@ public class DimAnalyser {
 	
 	
 	public static void main(String[] args) {
-		
-		Globals.getInstance().openFile("testfortran.f90");
+		if (args.length==1) {
+			Globals.getInstance().openFile(args[0]);
 
-		try {
-			Interpreter interpreter;
-			interpreter = InterpreterFactory.getInterpreter("fortran");
-		
-			while(!Globals.getInstance().fileRead()) {
-				try {
-					interpreter.interpretStatements();
-				} catch (Exception e) {
-					Globals.getInstance().errorMessage(e.getMessage());
-					if (!(e instanceof InterpretationError)) {
-						e.printStackTrace();
+			try {
+				Interpreter interpreter;
+				interpreter = InterpreterFactory.getInterpreter("fortran");
+			
+				while(!Globals.getInstance().fileRead()) {
+					try {
+						interpreter.interpretStatements();
+					} catch (Exception e) {
+						Globals.getInstance().errorMessage(e.getMessage());
+						if (!(e instanceof InterpretationError)) {
+							e.printStackTrace();
+						}
 					}
 				}
-			}
-		} catch (LanguageNotSupportedError e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			} catch (LanguageNotSupportedError e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		} else {
+			System.out.println("Usage: dimanalyser [file name]");
 		}
-		
+				
 	}
 
 }
