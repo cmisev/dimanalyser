@@ -49,7 +49,7 @@ public class VariableManagerTest {
 
 
 	@Test
-	public void testEnterScope() {
+	public void testEnterScope() throws NotInAnyScopeError {
 		
 		boolean errorThrown = false;
 		
@@ -66,6 +66,7 @@ public class VariableManagerTest {
 		}
 		
 		assertTrue(errorThrown);
+		vm.leaveScope();
 
 		
 	}
