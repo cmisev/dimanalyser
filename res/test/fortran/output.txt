@@ -1,0 +1,88 @@
+   4 Entering scope BLOCK_testfortran.f90:4
+Error in testfortran.f90 at line 6: Number of Unit declarations don't match
+Error in testfortran.f90 at line 7: Number of Unit declarations don't match
+   8     Adding variable instance [A]=kg
+   8     Adding variable instance [B]=kg
+   8     Adding variable instance [C]=kg
+  10 Leaving scope BLOCK_testfortran.f90:4
+  15 Adding function instance TEST_BEFORE_CALL_DPU [1]
+  15 Entering scope TEST_BEFORE_CALL_DPU
+  16     Unit of parameter 1 (A) set to m
+  16     Adding variable instance [A]=m
+  16     Unit of parameter 2 (B) set to kg
+  16     Adding variable instance [B]=kg
+  16     Unit of parameter 3 (C) set to s
+  16     Adding variable instance [C]=s
+  18     Adding variable instance D, unit not yet determined
+  18     Adding variable instance E, unit not yet determined
+  18     Adding variable instance F, unit not yet determined
+  18     Adding variable instance G, unit not yet determined
+  18     Adding variable instance H, unit not yet determined
+  20     Unit of variable instance D set to m
+  21     Unit of variable instance E set to m
+  22     Unit of variable instance F set to m
+Error in testfortran.f90 at line 24: Units don't match at = operation. variable instance [B]=kg should be variable instance [F]=m
+  B Definition trace:
+    @ testfortran.f90: 16
+
+  F Definition trace:
+    @ testfortran.f90: 22 by E
+    @ testfortran.f90: 21 by D
+    @ testfortran.f90: 20 by A
+    @ testfortran.f90: 16
+
+  27 Leaving scope TEST_BEFORE_CALL_DPU
+  32 Entering scope PROGRAM
+  34     Adding variable instance [XMIN]=m
+  34     Adding variable instance [DX]=m
+  35     Adding variable instance XMAX, unit not yet determined
+  36     Adding variable instance X1, unit not yet determined
+  36     Adding variable instance X2, unit not yet determined
+  36     Adding variable instance X3, unit not yet determined
+  36     Adding variable instance X4, unit not yet determined
+  37     Adding variable instance [MASS]=kg
+  37     Adding variable instance [TIME]=s
+Warning in testfortran.f90 at line 39: The expression seems to have no unit
+  41     Entering scope DO_testfortran.f90:41
+  41         Unit of variable instance XMAX set to m
+  41         Unit of variable instance X1 set to m
+  43         Unit of variable instance X2 set to m
+  44         Unit of variable instance X3 set to m
+  46         Entering scope DO_testfortran.f90:46
+Error in testfortran.f90 at line 46: Units don't match at .GT. operation. variable instance [X2]=m should be expression [0]=1
+  X2 Definition trace:
+    @ testfortran.f90: 43 by X1
+    @ testfortran.f90: 41
+
+  0 Definition trace:
+    @ testfortran.f90: 46
+
+Error in testfortran.f90 at line 47: Number of Unit declarations don't match
+  49         Leaving scope DO_testfortran.f90:46
+  51         Adding function instance TEST_AFTER_CALL_UPU, return unit not yet determined
+  53         Entering scope IF_testfortran.f90:53
+  54             Unit of variable instance X4 set to m
+  55         Leaving scope IF_testfortran.f90:53
+  55         Entering scope IF_testfortran.f90:55
+  56         Leaving scope IF_testfortran.f90:55
+  57     Leaving scope DO_testfortran.f90:41
+  61     Adding function instance TEST_AFTER_CALL_UPU [1]
+  61     Entering scope TEST_AFTER_CALL_UPU
+  62         Unit of parameter 1 (A) set to kg
+  62         Adding variable instance [A]=kg
+  62         Unit of parameter 2 (B) set to kg
+  62         Adding variable instance [B]=kg
+  62         Unit of parameter 3 (C) set to kg
+  62         Adding variable instance [C]=kg
+  65     Leaving scope TEST_AFTER_CALL_UPU
+  67     Adding function instance TEST_NO_PARAMETERS [1]
+  67     Entering scope TEST_NO_PARAMETERS
+  68         Adding variable instance [ENERGY]=m^2 kg s^-2
+  69         Adding variable instance [MASS]=kg
+  70         Adding variable instance VELOCITY, unit not yet determined
+  72         Unit of variable instance VELOCITY set to m s^-1
+  74     Leaving scope TEST_NO_PARAMETERS
+  76     Adding function instance TEST_NO_PARAMETERS_NOBRACES [1]
+  76     Entering scope TEST_NO_PARAMETERS_NOBRACES
+  77     Leaving scope TEST_NO_PARAMETERS_NOBRACES
+  79 Leaving scope PROGRAM
