@@ -84,6 +84,8 @@ public final class Globals {
 	 * debug depth
 	 */
 	private int mDebugDepth = 0;
+	
+	private String debugIndent = "";
 
 	/**
 	 * private constructor 
@@ -97,7 +99,7 @@ public final class Globals {
 	 * @param message the message to be printed
 	 */
 	public static void debug(String message) {
-		System.out.println(String.format("%4d ",mInstance.getLineNumber()) + new String(new char[4*mInstance.mDebugDepth]).replace("\0", " ") + message);
+		System.out.println(String.format("%4d ",mInstance.getLineNumber()) + mInstance.debugIndent + message);
 	}
 	
 	/**
@@ -105,6 +107,7 @@ public final class Globals {
 	 */
 	public static void enterDebugLevel() {
 		mInstance.mDebugDepth++;
+		mInstance.debugIndent += "    ";
 	}
 	
 	/**
@@ -112,9 +115,14 @@ public final class Globals {
 	 */
 	public static void leaveDebugLevel() {
 		mInstance.mDebugDepth--;
-		if (mInstance.mDebugDepth==-1) {
+        if (mInstance.mDebugDepth==-1) {
 			mInstance.mDebugDepth=0;
 		}
+        mInstance.debugIndent = "";
+        for (int k=0; k<mInstance.mDebugDepth; k++) {
+        	mInstance.debugIndent += "    ";
+        }
+		
 	}
 
 	/**
